@@ -1,0 +1,234 @@
+@import "./variables.css";
+
+.login-page {
+  min-height: 100vh;
+  background: var(--bg);
+  font-family: var(--font);
+}
+
+.topbar {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 20px 24px 0;
+}
+
+.cancel-btn {
+  background: none;
+  border: none;
+  color: var(--red);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+.wrap {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 12px 24px 60px;
+}
+
+/* Logo */
+.logo {
+  text-align: center;
+  font-size: 32px;
+  font-weight: 800;
+  margin: 24px 0 28px;
+  letter-spacing: -.5px;
+}
+
+.m1 {
+  color: var(--red);
+}
+
+.rest {
+  color: var(--navy);
+}
+
+h1 {
+  text-align: center;
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text, #111);
+}
+
+.subtitle {
+  text-align: center;
+  color: var(--muted, #6b7280);
+  font-size: 14px;
+  line-height: 1.55;
+  margin-bottom: 24px;
+}
+
+/* Card */
+.login-card {
+  background: var(--surface, #fff);
+  border-radius: var(--radius-lg, 20px);
+  padding: 28px 28px 24px;
+  box-shadow: var(--shadow-md, 0 4px 18px rgba(0, 0, 0, .09));
+  border: 1px solid var(--border, #e4e6ed);
+}
+
+/* Float-label fields */
+.field {
+  position: relative;
+  margin-bottom: 28px;
+}
+
+.field input {
+  width: 100%;
+  border: none;
+  border-bottom: 2px solid var(--border, #e4e6ed);
+  background: transparent;
+  padding: 20px 36px 8px 0;
+  font-size: 15px;
+  color: var(--text, #111);
+  outline: none;
+  transition: border-color .2s;
+}
+
+.field input:focus {
+  border-color: var(--red);
+}
+
+.field label {
+  position: absolute;
+  left: 0;
+  top: 20px;
+  color: var(--muted, #6b7280);
+  font-size: 14px;
+  pointer-events: none;
+  transition: .18s ease;
+}
+
+.field input:focus+label,
+.field input:not(:placeholder-shown)+label {
+  top: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--red);
+  letter-spacing: .4px;
+  text-transform: uppercase;
+}
+
+.eye {
+  position: absolute;
+  right: 0;
+  top: 18px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 16px;
+  opacity: .6;
+}
+
+.eye:hover {
+  opacity: 1;
+}
+
+.error-msg {
+  color: var(--red);
+  font-size: 13px;
+  margin-bottom: 14px;
+  text-align: center;
+  background: var(--red-soft, #fff0f0);
+  padding: 10px;
+  border-radius: var(--radius-sm, 8px);
+}
+
+/* Buttons */
+.btn-primary,
+.btn-secondary {
+  width: 100%;
+  padding: 15px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity .15s, transform .1s;
+  border: none;
+}
+
+.btn-primary {
+  background: var(--red);
+  color: white;
+  margin-top: 4px;
+}
+
+.btn-primary:hover {
+  opacity: .9;
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  margin-top: 12px;
+  background: transparent;
+  color: var(--red);
+  border: 1.5px solid var(--red);
+}
+
+.btn-secondary:hover {
+  background: var(--red-soft, #fff0f0);
+}
+
+/* Divider copy */
+.divider-copy {
+  text-align: center;
+  margin: 28px 0;
+  color: var(--muted, #6b7280);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+.divider-copy a {
+  color: var(--text, #111);
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+/* Platform cards */
+.platform-title {
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+
+.platform-card {
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, #e4e6ed);
+  border-radius: var(--radius-md, 14px);
+  padding: 16px 20px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+  color: var(--text, #111);
+  transition: border-color .15s;
+}
+
+.platform-card:hover {
+  border-color: var(--red);
+}
+
+/* FAB */
+.help-fab {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 50px;
+  height: 50px;
+  border-radius: 14px;
+  border: none;
+  background: var(--red-soft, #fff0f0);
+  color: var(--red);
+  font-size: 22px;
+  font-weight: 700;
+  box-shadow: var(--shadow-md, 0 4px 18px rgba(0, 0, 0, .09));
+  transition: transform .15s;
+}
+
+.help-fab:hover {
+  transform: scale(1.06);
+}

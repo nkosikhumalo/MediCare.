@@ -1,0 +1,41 @@
+# Java / Maven
+companion-backend/target/
+companion-backend/policy_rag.db
+policy_rag.db
+companion-backend/.mvn/wrapper/maven-wrapper.jar
+companion-backend/*.log
+
+# Node
+companion-frontend/node_modules/
+companion-frontend/.next/
+companion-frontend/out/
+companion-frontend/dist/
+
+# Environment files (DO NOT commit secrets!)
+*.env
+*.env.local
+*.env.*.local
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+companion-frontend/.idea/
+companion-backend/.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+node_modules/
+
+# Allow companion-backend-node to be tracked
+node_modules/

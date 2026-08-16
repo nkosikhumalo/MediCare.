@@ -1,0 +1,16 @@
+{
+  "appId": "za.co.candor.app",
+  "appName": "Candor",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "http",
+    "cleartext": true,
+    "allowNavigation": [
+      "10.245.65.75",
+      "localhost"
+    ]
+  },
+  "android": {
+    "allowMixedContent": true
+  }
+}

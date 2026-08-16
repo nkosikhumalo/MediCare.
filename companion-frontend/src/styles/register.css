@@ -1,0 +1,216 @@
+@import "./variables.css";
+
+.register-page {
+  min-height: 100vh;
+  background: var(--bg);
+  font-family: var(--font);
+  color: var(--text);
+}
+
+.topbar {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 20px 24px 0;
+}
+
+.topbar a,
+.topbar button {
+  background: none;
+  border: none;
+  color: var(--red);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.wrap {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 12px 24px 60px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 0 26px 28px;
+  box-shadow: var(--shadow-md);
+}
+
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 24px;
+}
+
+.tab {
+  flex: 1;
+  padding: 16px;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  transition: color .15s, border-color .15s;
+}
+
+.tab.active {
+  color: var(--red);
+  border-bottom-color: var(--red);
+}
+
+.field {
+  position: relative;
+  margin-bottom: 26px;
+}
+
+.field input {
+  width: 100%;
+  border: none;
+  border-bottom: 2px solid var(--border);
+  background: transparent;
+  padding: 20px 0 8px;
+  font-size: 15px;
+  color: var(--text);
+  outline: none;
+  transition: border-color .2s;
+}
+
+.field input:focus {
+  border-color: var(--red);
+}
+
+.field label {
+  position: absolute;
+  left: 0;
+  top: 20px;
+  color: var(--muted);
+  font-size: 14px;
+  pointer-events: none;
+  transition: .18s ease;
+}
+
+.field input:focus+label,
+.field input:not(:placeholder-shown)+label {
+  top: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--red);
+  letter-spacing: .4px;
+  text-transform: uppercase;
+}
+
+.field select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  background: var(--surface-2);
+  color: var(--text);
+  outline: none;
+}
+
+.select-field label {
+  position: static;
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  margin-bottom: 6px;
+}
+
+.verify-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  margin-bottom: 22px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.verify-box input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--red);
+}
+
+.btn,
+.btn-primary {
+  width: 100%;
+  padding: 15px;
+  background: var(--red);
+  color: white;
+  border: none;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity .15s;
+}
+
+.btn-primary:hover,
+.btn:hover {
+  opacity: .9;
+}
+
+.cancel-link {
+  display: block;
+  text-align: center;
+  margin-top: 18px;
+  font-size: 13.5px;
+  color: var(--muted);
+  text-decoration: underline;
+}
+
+.legal {
+  margin-top: 28px;
+  font-size: 12px;
+  color: var(--muted-2);
+  text-align: center;
+  line-height: 1.7;
+}
+
+.legal a {
+  color: var(--navy);
+  text-decoration: underline;
+}
+
+/* Success */
+.success-screen {
+  text-align: center;
+  padding: 50px 20px;
+}
+
+.check {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #e7f5ea;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  font-size: 36px;
+  color: #2e9e4b;
+}
+
+.success-screen h2 {
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+
+.success-screen p {
+  color: var(--muted);
+  margin-bottom: 24px;
+  font-size: 14px;
+  line-height: 1.6;
+}
