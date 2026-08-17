@@ -19,6 +19,10 @@ function Landing() {
     navigate("/register");
   }
 
+  function goToQuote() {
+    navigate("/quote");
+  }
+
   /** Candor AI — if logged in go to chat, otherwise prompt sign-in */
   function openCandor() {
     if (token) {
@@ -35,19 +39,12 @@ function Landing() {
 
   return (
     <div className="landing-page">
-      <div className="lp-utility">
-        <div className="lp-wrap">
-          <a href="#products">Individual</a>
-          <a href="#products">Business</a>
-          <a href="#products">Corporate</a>
-          <a href="#footer">Contact us</a>
-        </div>
-      </div>
+      {/* utility bar removed */}
 
       <header className="lp-header">
         <nav className="lp-nav lp-wrap">
           <Link to="/" className="lp-brand">
-            candor<span>.</span>
+            Medi<span>Care</span>
           </Link>
 
           <ul className="lp-nav-links">
@@ -92,12 +89,12 @@ function Landing() {
               <span className="lp-ai-badge">New</span>
               <h3>Not sure what you actually need?</h3>
               <p>
-                Tell Candor what&apos;s going on in your life — new baby, new car, new job —
+                Tell MediCare what&apos;s going on in your life — new baby, new car, new job —
                 and it&apos;ll point you to the right cover.
               </p>
             </div>
             <button type="button" className="lp-btn lp-btn-primary" onClick={openCandor}>
-              Ask Candor
+              Ask MediCare AI
             </button>
           </div>
 
@@ -113,7 +110,7 @@ function Landing() {
                 <span className="lp-cat">Medical aid</span>
                 <h3>Save up to 30% on your monthly plan</h3>
                 <p>Compare hospital and day-to-day cover options built around your budget.</p>
-                <button type="button" className="lp-btn lp-btn-primary" onClick={() => goToLogin("/home")}>
+                <button type="button" className="lp-btn lp-btn-primary" onClick={goToQuote}>
                   Get a quote
                 </button>
               </div>
@@ -130,7 +127,7 @@ function Landing() {
                 <span className="lp-cat">Life insurance</span>
                 <h3>A discounted quote in three minutes</h3>
                 <p>Cover that adjusts to your health, with rewards for staying well.</p>
-                <button type="button" className="lp-btn lp-btn-primary" onClick={() => goToLogin("/home")}>
+                <button type="button" className="lp-btn lp-btn-primary" onClick={goToQuote}>
                   Get a quote
                 </button>
               </div>
@@ -147,7 +144,7 @@ function Landing() {
                 <span className="lp-cat">Car &amp; home insurance</span>
                 <h3>Cashback on your premium, even if you claim</h3>
                 <p>Protect what you love and earn something back for safe habits.</p>
-                <button type="button" className="lp-btn lp-btn-primary" onClick={() => goToLogin("/home")}>
+                <button type="button" className="lp-btn lp-btn-primary" onClick={goToQuote}>
                   Get a quote
                 </button>
               </div>
@@ -168,7 +165,7 @@ function Landing() {
             </p>
             <div className="lp-btn-row">
               <button type="button" className="lp-btn lp-btn-primary" onClick={openCandor}>
-                Talk to Candor
+                Talk to MediCare AI
               </button>
               <button type="button" className="lp-btn lp-btn-outline" onClick={() => goToLogin("/home")}>
                 Sign in
@@ -207,6 +204,7 @@ function Landing() {
           </div>
 
           <div className="lp-pgrid">
+            {/* Medical aid */}
             <div className="lp-pcard">
               <div className="lp-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
@@ -217,11 +215,12 @@ function Landing() {
               <h3>Medical aid plans</h3>
               <p>Options from R645 a month, with day-to-day and hospital cover built around your needs.</p>
               <div className="lp-links">
-                <button type="button" className="primary" onClick={() => goToLogin("/home")}>Get a quote</button>
+                <button type="button" className="primary" onClick={goToQuote}>Get a quote</button>
                 <a href="#quote">Learn more</a>
               </div>
             </div>
 
+            {/* Life insurance */}
             <div className="lp-pcard">
               <div className="lp-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
@@ -232,11 +231,12 @@ function Landing() {
               <h3>Life cover</h3>
               <p>Secure your family&apos;s future and save up to 35% on your monthly premium.</p>
               <div className="lp-links">
-                <button type="button" className="primary" onClick={() => goToLogin("/chat")}>Ask Candor</button>
+                <button type="button" className="primary" onClick={goToQuote}>Get a quote</button>
                 <a href="#quote">Learn more</a>
               </div>
             </div>
 
+            {/* Car & home */}
             <div className="lp-pcard">
               <div className="lp-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
@@ -247,12 +247,13 @@ function Landing() {
               <h3>Car &amp; home insurance</h3>
               <p>Flexible cover with up to 30% cashback on premiums yearly, even if you claim.</p>
               <div className="lp-links">
-                <button type="button" className="primary" onClick={() => goToLogin("/home")}>Get a quote</button>
+                <button type="button" className="primary" onClick={goToQuote}>Get a quote</button>
                 <a href="#quote">Learn more</a>
               </div>
             </div>
 
-            <div className="lp-pcard">
+            {/* Investments — coming soon, non-clickable */}
+            <div className="lp-pcard lp-pcard-dim">
               <div className="lp-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
                   <path d="M4 20V10M12 20V4M20 20v-6" />
@@ -262,12 +263,12 @@ function Landing() {
               <h3>Local &amp; offshore investing</h3>
               <p>Solutions designed to grow and protect your wealth over the long run.</p>
               <div className="lp-links">
-                <button type="button" className="primary" onClick={() => goToLogin("/home")}>Sign in</button>
-                <a href="#quote">Learn more</a>
+                <span className="lp-coming-soon">Coming soon</span>
               </div>
             </div>
 
-            <div className="lp-pcard">
+            {/* Savings — coming soon */}
+            <div className="lp-pcard lp-pcard-dim">
               <div className="lp-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
                   <path d="M12 2v20M2 12h20" />
@@ -277,12 +278,12 @@ function Landing() {
               <h3>Long-term savings plans</h3>
               <p>From R500 a month, with rewards for staying invested toward your goals.</p>
               <div className="lp-links">
-                <button type="button" className="primary" onClick={() => goToLogin("/home")}>Sign in</button>
-                <a href="#quote">Learn more</a>
+                <span className="lp-coming-soon">Coming soon</span>
               </div>
             </div>
 
-            <div className="lp-pcard">
+            {/* Estates — coming soon */}
+            <div className="lp-pcard lp-pcard-dim">
               <div className="lp-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
                   <path d="M6 3h9l5 5v13H6z" />
@@ -292,8 +293,7 @@ function Landing() {
               <h3>Estate planning</h3>
               <p>Protect what you leave behind with will-drafting and estate administration.</p>
               <div className="lp-links">
-                <button type="button" className="primary" onClick={() => goToLogin("/home")}>Sign in</button>
-                <a href="#quote">Learn more</a>
+                <span className="lp-coming-soon">Coming soon</span>
               </div>
             </div>
           </div>
@@ -330,39 +330,39 @@ function Landing() {
                 &ldquo;We compared a few medical schemes before landing here — it was the flexibility
                 and the cashback on things we already do, like the gym, that won us over.&rdquo;
               </p>
-              <p className="lp-who">
+              <div className="lp-who">
                 <img
                   src="https://images.unsplash.com/photo-1565793244233-3d09028aad47?w=100&h=100&fit=crop&auto=format&q=70"
                   alt="Portrait of Naledi M."
                 />
                 <span>Naledi M.</span>
-              </p>
+              </div>
             </div>
             <div className="lp-story">
               <p className="lp-quote">
                 &ldquo;Claims used to be the part I dreaded most about insurance. Every question I
                 had was answered clearly and quickly.&rdquo;
               </p>
-              <p className="lp-who">
+              <div className="lp-who">
                 <img
                   src="https://images.unsplash.com/photo-1549043671-1e4550948355?w=100&h=100&fit=crop&auto=format&q=70"
                   alt="Portrait of Kyle R."
                 />
                 <span>Kyle R.</span>
-              </p>
+              </div>
             </div>
             <div className="lp-story">
               <p className="lp-quote">
                 &ldquo;Setting up my will felt overdue for years. Having someone walk me through it
                 made it far less daunting than I expected.&rdquo;
               </p>
-              <p className="lp-who">
+              <div className="lp-who">
                 <img
                   src="https://images.unsplash.com/photo-1566616213894-2d4e1baee5d8?w=100&h=100&fit=crop&auto=format&q=70"
                   alt="Portrait of Jesmine J."
                 />
                 <span>Jesmine J.</span>
-              </p>
+              </div>
             </div>
           </div>
         </div>
@@ -372,12 +372,12 @@ function Landing() {
         <div className="lp-wrap">
           <h2>Success has a number. What&apos;s yours?</h2>
           <p>
-            Speak to Candor or an accredited financial adviser and turn your plan into a
+            Speak to MediCare AI or an accredited financial adviser and turn your plan into a
             number worth working toward.
           </p>
           <div className="lp-btn-row">
             <button type="button" className="lp-btn lp-btn-primary" onClick={openCandor}>
-              Ask Candor
+              Ask MediCare AI
             </button>
             <button type="button" className="lp-btn lp-btn-outline" onClick={() => goToLogin("/home")}>
               Sign in
@@ -395,9 +395,6 @@ function Landing() {
                 <li><a href="#products">Medical aid</a></li>
                 <li><a href="#products">Car &amp; home insurance</a></li>
                 <li><a href="#products">Life insurance</a></li>
-                <li><a href="#products">Investments</a></li>
-                <li><a href="#products">Savings</a></li>
-                <li><a href="#products">Wills, Trusts &amp; Estates</a></li>
               </ul>
             </div>
             <div>
@@ -407,16 +404,14 @@ function Landing() {
                 <li><a href="#quote">Our brand story</a></li>
                 <li><a href="#quote">Awards</a></li>
                 <li><a href="#quote">Careers</a></li>
-                <li><a href="#quote">Sponsorships</a></li>
               </ul>
             </div>
             <div>
               <h4>Get help</h4>
               <ul>
-                <li><button type="button" className="primary" style={{ background: "none", border: "none", padding: 0, font: "inherit", color: "inherit", cursor: "pointer" }} onClick={openCandor}>Ask Candor</button></li>
+                <li><button type="button" className="primary" style={{ background: "none", border: "none", padding: 0, font: "inherit", color: "inherit", cursor: "pointer" }} onClick={openCandor}>Ask MediCare AI</button></li>
                 <li><button type="button" style={{ background: "none", border: "none", padding: 0, font: "inherit", color: "inherit", cursor: "pointer" }} onClick={() => goToLogin("/home")}>Sign in</button></li>
-                <li><a href="#quote">Contact us</a></li>
-                <li><a href="#quote">Download the app</a></li>
+                <li><a href="#footer">Contact us</a></li>
               </ul>
             </div>
             <div>
@@ -431,28 +426,28 @@ function Landing() {
           </div>
           <div className="lp-fbottom">
             <span>
-              An authorised financial services and registered credit provider. © 2026 Metropolitan Life Limited.
+              An authorised financial services and registered credit provider. © 2026 MediCare Limited.
             </span>
             <span>268 West Avenue, Centurion, 0157</span>
           </div>
         </div>
       </footer>
 
-      <button type="button" className="lp-ai-fab" onClick={openCandor} aria-label="Open Candor AI adviser">
+      <button type="button" className="lp-ai-fab" onClick={openCandor} aria-label="Open MediCare AI adviser">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
           <path d="M12 3a5 5 0 0 0-5 5v2a5 5 0 0 0 5 5 5 5 0 0 0 5-5V8a5 5 0 0 0-5-5z" />
           <path d="M8 21h8M12 15v6" />
         </svg>
-        <span>Ask Candor</span>
+        <span>Ask MediCare AI</span>
       </button>
 
       {showSignInGate && (
         <div className="lp-gate-overlay" onClick={() => setShowSignInGate(false)}>
           <div className="lp-gate-panel" onClick={(e) => e.stopPropagation()}>
-            <p className="lp-gate-eyebrow">Candor AI</p>
+            <p className="lp-gate-eyebrow">MediCare AI</p>
             <h3>Sign in to continue</h3>
             <p>
-              Log in with your account to chat with Candor about your policy,
+              Log in with your account to chat with MediCare AI about your policy,
               cover, and next steps.
             </p>
             <div className="lp-gate-actions">
