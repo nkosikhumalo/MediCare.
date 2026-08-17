@@ -86,6 +86,7 @@
   color: var(--lp-red);
 }
 
+
 .landing-page .lp-nav-links {
   display: none;
   gap: 28px;
@@ -524,6 +525,21 @@
 .landing-page .lp-pcard .lp-links a:hover,
 .landing-page .lp-pcard .lp-links button:hover {
   text-decoration: underline;
+}
+
+.landing-page .lp-pcard-dim {
+  opacity: .65;
+  pointer-events: none;
+}
+
+.landing-page .lp-coming-soon {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--lp-grey);
+  background: var(--lp-offwhite);
+  border: 1px solid var(--lp-line);
+  border-radius: 999px;
+  padding: 4px 12px;
 }
 
 /* Stats */

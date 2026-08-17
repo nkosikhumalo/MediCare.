@@ -1,23 +1,10 @@
-import { API_BASE, apiFetch } from "./api";
+// Auth calls are mocked out for frontend development.
+// Swap these back to real API calls when reconnecting the backend.
 
-export async function login(email, password) {
-    const res = await fetch(`${API_BASE}/api/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.message || "Login failed");
-    return data; // { token, user }
+export async function login(_email, _password) {
+  return { token: "mock-token", user: { id: 1, username: "dev", email: _email } };
 }
 
-export async function register(formData) {
-    const res = await fetch(`${API_BASE}/api/auth/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.message || "Registration failed");
-    return data;
+export async function register(_formData) {
+  return { success: true };
 }

@@ -28,21 +28,29 @@
   padding: 12px 24px 60px;
 }
 
-/* Logo */
-.logo {
+/* Brand title on login */
+.login-title {
   text-align: center;
-  font-size: 32px;
+  font-size: 36px;
   font-weight: 800;
-  margin: 24px 0 28px;
+  margin: 28px 0 6px;
   letter-spacing: -.5px;
 }
 
-.m1 {
+.brand-medi {
   color: var(--red);
 }
 
-.rest {
+.brand-care {
   color: var(--navy);
+}
+
+.login-heading {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text);
 }
 
 h1 {
@@ -102,8 +110,8 @@ h1 {
   transition: .18s ease;
 }
 
-.field input:focus+label,
-.field input:not(:placeholder-shown)+label {
+.field input:focus + label,
+.field input:not(:placeholder-shown) + label {
   top: 4px;
   font-size: 11px;
   font-weight: 600;
@@ -172,44 +180,26 @@ h1 {
   background: var(--red-soft, #fff0f0);
 }
 
-/* Divider copy */
+/* Forgot link */
 .divider-copy {
   text-align: center;
-  margin: 28px 0;
-  color: var(--muted, #6b7280);
-  font-size: 13.5px;
-  line-height: 1.6;
+  margin: 22px 0;
 }
 
-.divider-copy a {
-  color: var(--text, #111);
-  font-weight: 600;
-  text-decoration: underline;
-}
-
-/* Platform cards */
-.platform-title {
-  text-align: center;
-  font-size: 15px;
-  font-weight: 600;
-  margin-bottom: 14px;
-}
-
-.platform-card {
-  background: var(--surface, #fff);
-  border: 1px solid var(--border, #e4e6ed);
-  border-radius: var(--radius-md, 14px);
-  padding: 16px 20px;
-  margin-bottom: 10px;
+.forgot-link {
+  background: none;
+  border: none;
+  color: var(--red);
   font-size: 14px;
-  font-weight: 500;
-  text-align: center;
-  color: var(--text, #111);
-  transition: border-color .15s;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+  font-family: inherit;
 }
 
-.platform-card:hover {
-  border-color: var(--red);
+.forgot-link:hover {
+  opacity: .8;
 }
 
 /* FAB */
