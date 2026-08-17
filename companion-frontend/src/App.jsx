@@ -6,6 +6,7 @@ import Register from "./pages/Register";
 import Home from "./pages/Home";
 import Chat from "./pages/Chat";
 import Settings from "./pages/Settings";
+import Quote from "./pages/Quote";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
       <Route path="/home" element={<Home />} />
       <Route path="/chat" element={<Chat />} />
       <Route path="/settings" element={<Settings />} />
+      <Route path="/quote" element={<Quote />} />
     </Routes>
   );
 }
