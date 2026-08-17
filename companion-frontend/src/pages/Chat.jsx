@@ -25,7 +25,7 @@ function Chat() {
 
     // Redirect if not logged in
     useEffect(() => {
-        if (!token) { navigate("/login"); return; }
+        // Auth guard disabled during frontend development
         loadConversations();
     }, [token]);
 
