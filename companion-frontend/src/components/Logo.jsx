@@ -1,8 +1,8 @@
 function Logo() {
   return (
     <div className="logo">
-      <span className="m1">m</span>
-      <span className="rest">omentum</span>
+      <span className="m1">Medi</span>
+      <span className="rest">Care</span>
     </div>
   );
 }
