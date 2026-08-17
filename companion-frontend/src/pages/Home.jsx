@@ -13,9 +13,7 @@ function Home() {
   const [name, setName] = useState(() => localStorage.getItem("candor-name") || "Lerato");
   const fileRef = useRef(null);
 
-  useEffect(() => {
-    if (!token) navigate("/login", { state: { from: "/home" }, replace: true });
-  }, [token, navigate]);
+  // Auth guard disabled during frontend development
 
   useEffect(() => {
     if (profilePic) localStorage.setItem("candor-profile-pic", profilePic);
