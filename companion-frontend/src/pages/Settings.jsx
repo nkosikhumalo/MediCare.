@@ -68,7 +68,7 @@ function Settings() {
     return (
         <div className="settings-page">
             <div className="settings-header">
-                <button className="back-btn" onClick={() => navigate("/chat")}>← Back</button>
+                <button className="back-btn" onClick={() => navigate(-1)}>← Back</button>
                 <h1>Settings</h1>
             </div>
 
