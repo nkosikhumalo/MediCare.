@@ -827,3 +827,155 @@
 .landing-page .lp-gate-close:hover {
   color: var(--lp-ink);
 }
+
+/* ── Nav text buttons ── */
+.landing-page .lp-brand-btn {
+  font-weight: 800; font-size: 22px; letter-spacing: -0.02em;
+  color: var(--lp-ink); background: none; border: none;
+  cursor: pointer; font-family: inherit; padding: 0; flex-shrink: 0;
+}
+.landing-page .lp-brand-btn span { color: var(--lp-red); }
+
+.landing-page .lp-nav-text-btn {
+  background: none; border: none; font-family: inherit;
+  font-size: 14px; font-weight: 500; color: var(--lp-grey);
+  cursor: pointer; padding: 0; transition: color .15s;
+}
+.landing-page .lp-nav-text-btn:hover { color: var(--lp-red); }
+.landing-page .lp-nav-text-btn.lp-nav-active { color: var(--lp-red); font-weight: 700; }
+
+.landing-page .lp-footer-link-btn {
+  background: none; border: none; font-family: inherit;
+  font-size: 13px; color: var(--lp-grey); cursor: pointer; padding: 0;
+}
+.landing-page .lp-footer-link-btn:hover { color: var(--lp-red); }
+
+/* ── Section hero ── */
+.landing-page .lp-section-hero {
+  position: relative; height: 420px; overflow: hidden;
+}
+@media (min-width: 760px) { .landing-page .lp-section-hero { height: 480px; } }
+
+.landing-page .lp-section-hero-img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
+
+.landing-page .lp-section-hero-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, rgba(17,24,39,.85) 0%, rgba(17,24,39,.4) 100%);
+  display: flex; align-items: center; padding-block: 48px;
+}
+
+.landing-page .lp-section-hero-h1 {
+  font-size: 32px; font-weight: 800; color: #fff;
+  max-width: 560px; line-height: 1.2; margin: 10px 0 12px;
+}
+@media (min-width: 760px) { .landing-page .lp-section-hero-h1 { font-size: 42px; } }
+
+.landing-page .lp-section-hero-sub {
+  font-size: 15px; color: rgba(255,255,255,.75);
+  max-width: 500px; line-height: 1.6; margin: 0;
+}
+
+.landing-page .lp-btn-white-outline {
+  border: 1.5px solid rgba(255,255,255,.6); color: #fff;
+  background: transparent; display: inline-flex;
+  align-items: center; justify-content: center;
+  border-radius: 6px; font-size: 14px; font-weight: 600;
+  padding: 10px 20px; cursor: pointer; font-family: inherit; transition: .15s;
+}
+.landing-page .lp-btn-white-outline:hover { border-color: #fff; background: rgba(255,255,255,.08); }
+
+.landing-page .lp-coming-soon-badge {
+  display: inline-flex; align-items: center;
+  background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.3);
+  color: rgba(255,255,255,.7); font-size: 13px; font-weight: 600;
+  padding: 8px 18px; border-radius: 6px;
+}
+
+/* ── Facts bar ── */
+.landing-page .lp-facts-bar {
+  background: var(--lp-ink); padding-block: 18px;
+}
+.landing-page .lp-facts-inner {
+  display: flex; flex-wrap: wrap; gap: 24px; justify-content: center;
+}
+.landing-page .lp-fact {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; color: rgba(255,255,255,.8); font-weight: 500;
+}
+.landing-page .lp-fact-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--lp-red); flex-shrink: 0;
+}
+
+/* ── Plans section ── */
+.landing-page .lp-section-plans {
+  padding-block: 72px; background: var(--lp-offwhite);
+}
+.landing-page .lp-section-plans-h2 {
+  font-size: 28px; font-weight: 800; text-align: center;
+  color: var(--lp-ink); margin-bottom: 40px;
+}
+.landing-page .lp-plans-grid {
+  display: grid; grid-template-columns: 1fr; gap: 20px;
+}
+@media (min-width: 700px) { .landing-page .lp-plans-grid { grid-template-columns: repeat(3, 1fr); } }
+
+.landing-page .lp-plan-card {
+  background: #fff; border: 1px solid var(--lp-line);
+  border-radius: 12px; padding: 28px 24px;
+  position: relative; display: flex; flex-direction: column; gap: 14px;
+}
+.landing-page .lp-plan-card.lp-plan-featured {
+  border-color: var(--lp-red); border-width: 2px;
+  box-shadow: 0 8px 32px rgba(228,3,43,.12);
+}
+.landing-page .lp-plan-badge {
+  position: absolute; top: -12px; left: 50%;
+  transform: translateX(-50%);
+  background: var(--lp-red); color: #fff;
+  font-size: 11px; font-weight: 700; padding: 3px 12px;
+  border-radius: 999px; white-space: nowrap;
+}
+.landing-page .lp-plan-card h3 { font-size: 17px; font-weight: 700; color: var(--lp-ink); margin: 0; }
+.landing-page .lp-plan-price { font-size: 22px; font-weight: 800; color: var(--lp-red); }
+.landing-page .lp-plan-desc { font-size: 13.5px; color: var(--lp-grey); line-height: 1.55; margin: 0; }
+.landing-page .lp-plan-features {
+  list-style: none; display: flex; flex-direction: column; gap: 8px;
+  padding: 0; margin: 0; flex: 1;
+}
+.landing-page .lp-plan-features li {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; color: var(--lp-grey);
+}
+.landing-page .lp-plan-features li svg {
+  width: 14px; height: 14px; stroke: var(--lp-red); flex-shrink: 0;
+}
+.landing-page .lp-plan-btn {
+  width: 100%; padding: 12px; border-radius: 6px;
+  font-size: 14px; font-weight: 700; cursor: pointer;
+  font-family: inherit; border: none; transition: .15s; margin-top: auto;
+}
+.landing-page .lp-plan-btn-primary { background: var(--lp-red); color: #fff; }
+.landing-page .lp-plan-btn-primary:hover { background: var(--lp-red-dark); }
+.landing-page .lp-plan-btn-outline { background: transparent; color: var(--lp-red); border: 1.5px solid var(--lp-red) !important; }
+.landing-page .lp-plan-btn-outline:hover { background: #fff0f2; }
+.landing-page .lp-plan-btn-disabled { background: var(--lp-offwhite); color: var(--lp-grey); cursor: not-allowed; border: 1px solid var(--lp-line) !important; }
+
+/* ── Split section ── */
+.landing-page .lp-section-split { padding-block: 72px; }
+.landing-page .lp-split-inner {
+  display: grid; grid-template-columns: 1fr; gap: 48px; align-items: center;
+}
+@media (min-width: 900px) { .landing-page .lp-split-inner { grid-template-columns: 1fr 1fr; } }
+
+.landing-page .lp-split-img img {
+  width: 100%; border-radius: 12px; display: block;
+  max-height: 380px; object-fit: cover;
+}
+.landing-page .lp-split-copy h2 {
+  font-size: 26px; font-weight: 800; color: var(--lp-ink);
+  line-height: 1.25; margin: 10px 0 14px;
+}
+.landing-page .lp-split-copy p { font-size: 15px; color: var(--lp-grey); line-height: 1.7; }
