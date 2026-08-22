@@ -45,7 +45,7 @@ export default function Quote() {
                                 ? `We just sent a personalised quote to ${formData.email}. Check your inbox — it should arrive within a few minutes.`
                                 : `Thanks ${formData.name}. One of our advisers will call you at ${formData.phone} shortly.`}
                         </p>
-                        <button className="quote-btn" onClick={() => navigate("/")}>Back to home</button>
+                        <button className="quote-btn" onClick={() => navigate("/home")}>Back to home</button>
                     </div>
                 </div>
             </div>
