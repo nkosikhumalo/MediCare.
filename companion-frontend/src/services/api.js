@@ -2,7 +2,7 @@
  *  On Android (Capacitor), localhost won't resolve — use the machine's LAN IP.
  *  Set VITE_API_BASE in .env.local to override (e.g. http://10.245.65.75:5000).
  */
-export const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
+export const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3001";
 
 export function getToken() {
     return sessionStorage.getItem("token");
