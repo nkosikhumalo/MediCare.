@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { register as registerUser } from "../services/authService";
 import "../styles/register.css";
 
@@ -38,6 +39,7 @@ const STEP_EMAIL_CODE = "email_code";
 const STEP_DONE = "done";
 
 export default function Register() {
+  const navigate = useNavigate();
   const [citizen, setCitizen] = useState("SA");
   const [step, setStep] = useState(STEP_FORM);
   const [captchaChecked, setCaptchaChecked] = useState(false);
@@ -166,6 +168,14 @@ export default function Register() {
             >
               {submitting ? "Processing…" : "Verify & Continue"}
             </button>
+            <button
+              type="button"
+              className="cancel-link"
+              style={{ marginTop: 12, background: "none", border: "none", cursor: "pointer" }}
+              onClick={() => setStep(STEP_FORM)}
+            >
+              ← Back to form
+            </button>
             {serverError && <p className="field-error" style={{ marginTop: 12 }}>{serverError}</p>}
           </div>
         </div>
@@ -248,7 +258,7 @@ export default function Register() {
             <div className="check">✓</div>
             <h2>Account verified</h2>
             <p>Your account is ready. You can now log in with your new credentials.</p>
-            <button className="btn btn-primary" onClick={() => window.location.href = "/login"}>
+            <button className="btn btn-primary" onClick={() => navigate("/login")}>
               Continue to log in
             </button>
           </div>
@@ -261,7 +271,7 @@ export default function Register() {
   return (
     <div className="register-page">
       <div className="topbar">
-        <a href="/">← Back</a>
+        <button type="button" onClick={() => window.history.back()}>← Back</button>
       </div>
 
       <div className="wrap">
@@ -398,7 +408,7 @@ export default function Register() {
             <button className="btn btn-primary" type="submit">Continue</button>
           </form>
 
-          <a href="/" className="cancel-link">Cancel</a>
+          <button type="button" className="cancel-link" onClick={() => navigate(-1)}>Cancel</button>
         </div>
 
         <div className="legal">
