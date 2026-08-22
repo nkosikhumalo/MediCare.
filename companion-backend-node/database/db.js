@@ -1,4 +1,5 @@
 const { Pool } = require("pg");
+const bcrypt = require("bcrypt");
 require("dotenv").config();
 
 const pool = new Pool({
@@ -43,6 +44,29 @@ async function initializeSchema() {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `);
+  await pool.query(`
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS policy_id VARCHAR(100);
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS deceased_flag BOOLEAN DEFAULT FALSE;
+    CREATE TABLE IF NOT EXISTS policy_members (
+      id SERIAL PRIMARY KEY,
+      policy_id VARCHAR(100) NOT NULL,
+      full_name VARCHAR(255) NOT NULL,
+      relationship VARCHAR(100) NOT NULL,
+      date_of_birth DATE NOT NULL,
+      cover_type VARCHAR(100) NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+
+  const nkosi = await pool.query("SELECT id FROM users WHERE email = $1", ["Nkosi_10@outlook.com"]);
+  if (!nkosi.rowCount) {
+    const password = await bcrypt.hash("Khumalo", 10);
+    await pool.query(
+      `INSERT INTO users (first_name, last_name, email, username, password, role, policy_id, deceased_flag)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, FALSE)`,
+      ["Nkosi", "Khumalo", "Nkosi_10@outlook.com", "Nkosi", password, "ROLE_POLICYHOLDER", "POL-NKOSI-1001"]
+    );
+  }
 
   initialized = true;
 }
