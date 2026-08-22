@@ -1,23 +1,35 @@
-import { createContext, useContext } from "react";
+import { createContext, useContext, useState } from "react";
 
-// Auth is mocked out for frontend development.
-// All pages are accessible without a real token.
 const AuthContext = createContext(null);
 
-const MOCK_USER = { id: 1, username: "dev", email: "dev@medicare.local" };
-const MOCK_TOKEN = "mock-token";
-
 export function AuthProvider({ children }) {
-    function saveAuth() { }
-    function clearAuth() { }
+    const [token, setToken] = useState(() => sessionStorage.getItem("token"));
+    const [user, setUser] = useState(() => {
+        const savedUser = sessionStorage.getItem("user");
+        return savedUser ? JSON.parse(savedUser) : null;
+    });
+
+    function saveAuth(nextToken, nextUser) {
+        sessionStorage.setItem("token", nextToken);
+        sessionStorage.setItem("user", JSON.stringify(nextUser));
+        setToken(nextToken);
+        setUser(nextUser);
+    }
+
+    function clearAuth() {
+        sessionStorage.removeItem("token");
+        sessionStorage.removeItem("user");
+        setToken(null);
+        setUser(null);
+    }
 
     return (
         <AuthContext.Provider value={{
-            token: MOCK_TOKEN,
-            user: MOCK_USER,
+            token,
+            user,
             saveAuth,
             clearAuth,
-            isAuthenticated: true,
+            isAuthenticated: Boolean(token),
         }}>
             {children}
         </AuthContext.Provider>
