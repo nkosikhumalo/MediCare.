@@ -1,0 +1,176 @@
+﻿import { useEffect, useState, useRef } from "react";
+import { useTheme } from "../context/ThemeContext";
+import { useAuth } from "../context/AuthContext";
+import "../styles/home.css";
+
+function Home() {
+  const { user } = useAuth();
+  const { darkMode, toggleTheme } = useTheme();
+  const [profilePic, setProfilePic] = useState(() => localStorage.getItem("candor-profile-pic") || null);
+  const fileRef = useRef(null);
+  const name = user?.username || "Nkosi";
+  const role = user?.role === "ROLE_BENEFICIARY" ? "Beneficiary" : "Policyholder";
+
+  // Auth guard disabled during frontend development
+
+  useEffect(() => {
+    if (profilePic) localStorage.setItem("candor-profile-pic", profilePic);
+  }, [profilePic]);
+
+
+  // keep guest guide minimal — remove Policyholder / Premium payer entries as requested
+  const guestRoles = [
+    {
+      title: "Policyholder",
+      points: [
+        "Owns the policy and can approve changes.",
+        "Pays premiums and decides on beneficiaries.",
+      ],
+    },
+    {
+      title: "Premium payer",
+      points: [
+        "Keeps the policy active through premium payments.",
+        "Covers the premium payments for the policy.",
+      ],
+    },
+    {
+      title: "Insured life",
+      points: [
+        "Is the person whose life supports the cover.",
+        "Claims are based on this life being insured.",
+      ],
+    },
+    {
+      title: "Beneficiary",
+      points: [
+        "Receives benefit when the insured life passes away.",
+        "Can be changed by the policyholder at any time.",
+      ],
+    },
+  ];
+
+  return (
+    <div className="home-page">
+      <div className="logo-bar">
+        <div className="wrap top-nav">
+          <a className="candor-brand" href="/home" aria-label="Candor home">
+            Candor<span className="brand-dot" aria-hidden="true"></span>
+          </a>
+          <div className="top-nav-links">
+            <a className="active" href="/home">Overview</a>
+            <a href="/chat">Support</a>
+            <button className="mode-toggle" onClick={toggleTheme}>{darkMode ? "Light mode" : "Dark mode"}</button>
+          </div>
+        </div>
+      </div>
+
+      <section className="hero">
+        <div className="hero-inner">
+          <div className="hero-top">
+            <div>
+              <h1>Welcome, {name}</h1>
+              <p>{role} · Your Candor policy dashboard</p>
+            </div>
+
+            <div className="hero-actions">
+              <button className="theme-toggle" onClick={toggleTheme}>
+                {darkMode ? "Light mode" : "Dark mode"}
+              </button>
+
+              <input type="file" accept="image/*" ref={fileRef} style={{ display: "none" }} onChange={(e) => {
+                const f = e.target.files && e.target.files[0];
+                if (!f) return;
+                const reader = new FileReader();
+                reader.onload = () => setProfilePic(reader.result);
+                reader.readAsDataURL(f);
+              }} />
+
+              <div className="avatar" onClick={() => fileRef.current?.click()} style={{ cursor: "pointer" }}>
+                {profilePic ? <img src={profilePic} alt="avatar" style={{ width: 36, height: 36, borderRadius: "50%" }} /> : <div style={{ width: 36, height: 36 }}>m</div>}
+              </div>
+            </div>
+          </div>
+
+          <div className="tabs">
+            <button className="tab active">
+              <span className="icon-m">C</span>
+              Candor
+            </button>
+
+            <button className="tab inactive">
+              <span className="icon-m">M</span>
+              Multiply
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <main className="content">
+        <div className="wrap">
+          <div className="feedback-card">
+            <span>Signed in as <strong>{role}</strong>. Your role determines what you can manage.</span>
+            <a className="feedback-btn" href="/chat">
+              Ask Candor
+            </a>
+          </div>
+
+          <div className="section-label">
+            <span className="bar"></span>
+            <span>YOUR ROLE: {role}</span>
+          </div>
+
+          <div className="guest-grid">
+            {guestRoles.map((role) => (
+              <div className="guest-card" key={role.title}>
+                <h3>{role.title}</h3>
+                <ul>
+                  {role.points.map((point) => (
+                    <li key={point}>{point}</li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+
+          <div className="section-label section-space">
+            <span className="bar"></span>
+            <span>HEALTHCARE</span>
+          </div>
+
+          <div className="cards-grid">
+            <div className="policy-card">
+              <h3>Medical Scheme</h3>
+              <div className="row">
+                <span className="label">Benefit Option</span>
+                <span className="value">Custom</span>
+              </div>
+              <div className="row">
+                <span className="label">Membership number</span>
+                <span className="value">1234567890</span>
+              </div>
+            </div>
+
+            <div className="policy-card">
+              <h3>Multiply</h3>
+              <div className="row">
+                <span className="label">MM-124211527</span>
+                <span className="value">Custom</span>
+              </div>
+              <div className="row">
+                <span className="label">Option</span>
+                <span className="value">Multiply Instant</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <a href="/chat" className="fab">
+        <div className="fab-inner">m</div>
+      </a>
+    </div>
+  );
+}
+
+export default Home;
