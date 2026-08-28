@@ -1,49 +1,33 @@
 const { Pool } = require("pg");
 const bcrypt = require("bcrypt");
+const fs = require("fs");
+const path = require("path");
 require("dotenv").config();
 
-const pool = new Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASSWORD,
-  port: process.env.DB_PORT,
-});
+const poolConfig = process.env.DATABASE_URL
+  ? {
+      connectionString: process.env.DATABASE_URL,
+      ssl: process.env.DATABASE_SSL === "false"
+        ? false
+        : { rejectUnauthorized: false },
+    }
+  : {
+      user: process.env.DB_USER,
+      host: process.env.DB_HOST,
+      database: process.env.DB_NAME,
+      password: process.env.DB_PASSWORD,
+      port: process.env.DB_PORT,
+    };
+
+const pool = new Pool(poolConfig);
 
 let initialized = false;
 
 async function initializeSchema() {
   if (initialized) return;
 
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS users (
-      id SERIAL PRIMARY KEY,
-      first_name VARCHAR(100),
-      last_name VARCHAR(100),
-      email VARCHAR(255) UNIQUE NOT NULL,
-      username VARCHAR(100) UNIQUE NOT NULL,
-      password TEXT NOT NULL,
-      role VARCHAR(50) DEFAULT 'policy_holder',
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-
-    CREATE TABLE IF NOT EXISTS conversations (
-      id SERIAL PRIMARY KEY,
-      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-      title VARCHAR(255) DEFAULT 'New Conversation',
-      preview TEXT,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-
-    CREATE TABLE IF NOT EXISTS messages (
-      id SERIAL PRIMARY KEY,
-      conversation_id INTEGER NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
-      sender VARCHAR(20) NOT NULL,
-      message TEXT NOT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-  `);
+  const schema = fs.readFileSync(path.join(__dirname, "schema.sql"), "utf8");
+  await pool.query(schema);
   await pool.query(`
     ALTER TABLE users ADD COLUMN IF NOT EXISTS policy_id VARCHAR(100);
     ALTER TABLE users ADD COLUMN IF NOT EXISTS deceased_flag BOOLEAN DEFAULT FALSE;
@@ -58,15 +42,9 @@ async function initializeSchema() {
     );
   `);
 
-  const nkosi = await pool.query("SELECT id FROM users WHERE email = $1", ["Nkosi_10@outlook.com"]);
-  if (!nkosi.rowCount) {
-    const password = await bcrypt.hash("Khumalo", 10);
-    await pool.query(
-      `INSERT INTO users (first_name, last_name, email, username, password, role, policy_id, deceased_flag)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, FALSE)`,
-      ["Nkosi", "Khumalo", "Nkosi_10@outlook.com", "Nkosi", password, "ROLE_POLICYHOLDER", "POL-NKOSI-1001"]
-    );
-  }
+  // Skip default user creation - test data is pre-seeded in Supabase
+  // const nkosi = await pool.query("SELECT id FROM users WHERE email = $1", ["Nkosi_10@outlook.com"]);
+  // if (!nkosi.rowCount) { ... }
 
   initialized = true;
 }
