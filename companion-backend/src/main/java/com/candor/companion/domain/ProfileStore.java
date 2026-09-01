@@ -1,10 +1,10 @@
 package com.candor.companion.domain;
 
-import org.springframework.stereotype.Component;
-
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.springframework.stereotype.Component;
 
 /**
  * Mock, in-memory "source of truth" for policy/deceased state.
@@ -26,9 +26,9 @@ public class ProfileStore {
         profilesByPolicyId.put("POL-1001",
                 new PolicyProfile("POL-1001", "sipho-policyholder-1001", "lerato-beneficiary-1001", false));
 
-        // ── POL-2002 : Active Beneficiary on a live policy ─────────────────────
+        // ── POL-2002 : Deceased policyholder (test case for demotion) ──────────
         profilesByPolicyId.put("POL-2002",
-                new PolicyProfile("POL-2002", "sipho-policyholder-2002", "lerato-beneficiary-2002", false));
+                new PolicyProfile("POL-2002", "user-policyholder-2", "user-beneficiary-2", true));
 
         // ── POL-3003 : Deceased policyholder — Empathetic Claims Mode ──────────
         profilesByPolicyId.put("POL-3003",

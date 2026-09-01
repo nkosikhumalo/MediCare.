@@ -50,7 +50,19 @@ function fetchJavaToken(subject, policyId, role) {
 
 exports.register = async (req, res) => {
   try {
-    const { first_name, last_name, email, username, password, role } = req.body;
+    const {
+      first_name,
+      last_name,
+      email,
+      username,
+      password,
+      role,
+      phone,
+      date_of_birth,
+      id_number,
+      passport_number,
+      country_of_issue,
+    } = req.body;
 
     const emailExists = await User.findUserByEmail(email);
     if (emailExists) return res.status(400).json({ message: "Email already exists" });
@@ -74,6 +86,11 @@ exports.register = async (req, res) => {
       password: hashedPassword,
       role: normalizedRole,
       deceased_flag: false,
+      phone,
+      date_of_birth,
+      id_number,
+      passport_number,
+      country_of_issue,
       // policy_id auto-generated in userModel if not provided
     });
 
