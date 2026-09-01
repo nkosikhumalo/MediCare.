@@ -2,6 +2,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { deleteConversation } from "../services/chatService";
 
+function formatConvoTitle(title) {
+    if (!title) return "New chat";
+    return title.replace(/\s*[—–\-]\s*/g, " ").replace(/\s+/g, " ").trim();
+}
+
 function Sidebar({
     open,
     close,
@@ -84,7 +89,7 @@ function Sidebar({
                                             close();
                                         }}
                                     >
-                                        <div className="convo-title">{chat.title}</div>
+                                        <div className="convo-title">{formatConvoTitle(chat.title)}</div>
                                         {chat.preview && <div className="convo-preview">{chat.preview}</div>}
 
                                         {deletingId === chat.id ? (

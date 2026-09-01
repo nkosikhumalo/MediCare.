@@ -1,49 +1,49 @@
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
+import Welcome from "./Welcome";
+import { COVER_OPTIONS, WAITING_OPTIONS } from "../hooks/useChat";
 
-function speakText(text) {
-    if (!window.speechSynthesis) return;
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "en-ZA";
-    utterance.rate = 1;
-    utterance.pitch = 1;
-    const voices = window.speechSynthesis.getVoices();
-    const match = voices.find(v => v.lang.startsWith("en"));
-    if (match) utterance.voice = match;
-    window.speechSynthesis.speak(utterance);
+function ChatUserAvatar({ size = 22 }) {
+    return (
+        <span className="bubble-avatar bubble-avatar-user" aria-hidden="true">
+            <svg
+                width={size}
+                height={size}
+                viewBox="0 0 40 40"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="chat-user-avatar-svg"
+            >
+                <circle cx="20" cy="20" r="20" className="chat-avatar-bg" />
+                <circle cx="20" cy="14" r="5.5" className="chat-avatar-figure" />
+                <path d="M8 32 Q8 22 20 22 Q32 22 32 32" className="chat-avatar-figure" />
+            </svg>
+        </span>
+    );
+}
+
+function ChatBotAvatar() {
+    return <span className="bubble-avatar bubble-avatar-bot" aria-hidden="true">M</span>;
 }
 
 function SpeakerBtn({ text }) {
     const [speaking, setSpeaking] = useState(false);
-
     function toggle() {
-        if (speaking) {
-            window.speechSynthesis.cancel();
-            setSpeaking(false);
-        } else {
-            if (!window.speechSynthesis) return;
-            window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = "en-ZA";
-            const voices = window.speechSynthesis.getVoices();
-            const match = voices.find(v => v.lang.startsWith("en"));
-            if (match) utterance.voice = match;
-            utterance.onend = () => setSpeaking(false);
-            utterance.onerror = () => setSpeaking(false);
-            window.speechSynthesis.speak(utterance);
-            setSpeaking(true);
-        }
+        if (speaking) { window.speechSynthesis.cancel(); setSpeaking(false); return; }
+        if (!window.speechSynthesis) return;
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = "en-ZA";
+        const v = window.speechSynthesis.getVoices().find(v => v.lang.startsWith("en"));
+        if (v) u.voice = v;
+        u.onend = () => setSpeaking(false);
+        u.onerror = () => setSpeaking(false);
+        window.speechSynthesis.speak(u);
+        setSpeaking(true);
     }
-
     return (
-        <button
-            type="button"
-            className={`msg-speak-btn ${speaking ? "msg-speak-active" : ""}`}
-            onClick={toggle}
-            aria-label={speaking ? "Stop reading" : "Read aloud"}
-            title={speaking ? "Stop" : "Read aloud"}
-        >
+        <button type="button" className={`msg-speak-btn ${speaking ? "msg-speak-active" : ""}`}
+            onClick={toggle} aria-label={speaking ? "Stop reading" : "Read aloud"}>
             {speaking ? (
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="13" height="13">
                     <rect x="6" y="6" width="4" height="12" rx="1" fill="currentColor" stroke="none" />
@@ -53,80 +53,106 @@ function SpeakerBtn({ text }) {
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="13" height="13">
                     <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
                     <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
-                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
                 </svg>
             )}
         </button>
     );
 }
 
-function MessageList({ messages, isLoading, bottomRef }) {
+function Chips({ type, onSelect }) {
+    const options = type === "waiting_period" ? WAITING_OPTIONS : COVER_OPTIONS;
+    return (
+        <div className="msg-chips">
+            {options.map(o => (
+                <button key={o.value} className="msg-chip" type="button"
+                    onClick={() => onSelect(type, o.value, o.label)}>
+                    <span className="msg-chip-label">{o.label}</span>
+                    {o.plan && <span className="msg-chip-sub">{o.plan}</span>}
+                </button>
+            ))}
+        </div>
+    );
+}
+
+function ActionOptions({ options, onSelect }) {
+    return (
+        <div className="msg-chips">
+            {options.map(o => (
+                <button key={o.id} className="msg-chip" type="button"
+                    onClick={() => onSelect(o)}>
+                    <span className="msg-chip-label">{o.label}</span>
+                </button>
+            ))}
+        </div>
+    );
+}
+
+function MessageList({ messages, isLoading, bottomRef, onQuickStart, onFocusInput, onChipSelect, onActionSelect, activeConversation, userName }) {
     const isEmpty = messages.length === 0 && !isLoading;
+    const displayUser = userName || "You";
+
+    function renderBubble(msg) {
+        const isBot = msg.sender === "bot";
+        const name = isBot ? "MediCandor" : displayUser;
+
+        return (
+            <div className={`bubble ${isBot ? "bubble-bot" : "bubble-user"}`}>
+                <div className="bubble-header">
+                    {isBot ? <ChatBotAvatar /> : <ChatUserAvatar />}
+                    <span className={`bubble-name ${isBot ? "bubble-name-bot" : "bubble-name-user"}`}>{name}</span>
+                    {isBot && <span className="bubble-badge">AI</span>}
+                </div>
+                <div className="bubble-body">
+                    {isBot ? (
+                        <ReactMarkdown>{msg.text || msg.message || ""}</ReactMarkdown>
+                    ) : (
+                        msg.text || msg.message
+                    )}
+                    {msg.actionOptions && (
+                        <ActionOptions options={msg.actionOptions}
+                            onSelect={(opt) => onActionSelect?.(opt, activeConversation)} />
+                    )}
+                    {msg.chips && (
+                        <Chips type={msg.chips}
+                            onSelect={(type, value, label) =>
+                                onChipSelect?.(type, value, label, activeConversation)} />
+                    )}
+                    {isBot && (
+                        <SpeakerBtn text={msg.text || msg.message || ""} />
+                    )}
+                </div>
+            </div>
+        );
+    }
 
     return (
         <main className="chat-body">
             {isEmpty ? (
-                <div className="chat-empty">
-                    <div className="chat-empty-mark">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" width="26" height="26">
-                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                        </svg>
-                    </div>
-                    <h1 className="chat-empty-title">MediCare AI</h1>
-                    <p className="chat-empty-sub">
-                        Ask anything about your policy, claims, or cover.
-                    </p>
-                </div>
+                <Welcome onQuickStart={onQuickStart} onFocusInput={onFocusInput} />
             ) : (
                 <div className="messages">
                     {messages.map((msg) => (
                         <div key={msg.id} className={`message-row ${msg.sender}`}>
-                            <div className="avatar">
-                                {msg.sender === "bot" ? (
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="15" height="15">
-                                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                                    </svg>
-                                ) : (
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="15" height="15">
-                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                                        <circle cx="12" cy="7" r="4" />
-                                    </svg>
-                                )}
-                            </div>
-                            <div className="bubble">
-                                {msg.sender === "bot" ? (
-                                    <ReactMarkdown>{msg.message || msg.text}</ReactMarkdown>
-                                ) : (
-                                    msg.message || msg.text
-                                )}
-                                {msg.attachment && (
-                                    <div className="attachment">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="12" height="12" style={{ marginRight: 4 }}>
-                                            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66L9.41 17.41a2 2 0 0 1-2.83-2.83l8.49-8.48" />
-                                        </svg>
-                                        {msg.attachment}
-                                    </div>
-                                )}
-                                {msg.sender === "bot" && (
-                                    <SpeakerBtn text={msg.message || msg.text || ""} />
-                                )}
-                            </div>
+                            {renderBubble(msg)}
                         </div>
                     ))}
 
                     {isLoading && (
                         <div className="message-row bot">
-                            <div className="avatar">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="15" height="15">
-                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                                </svg>
-                            </div>
-                            <div className="bubble typing-indicator">
-                                <span /><span /><span />
+                            <div className="bubble bubble-bot bubble-thinking">
+                                <div className="bubble-header">
+                                    <ChatBotAvatar />
+                                    <span className="bubble-name bubble-name-bot">MediCandor</span>
+                                    <span className="bubble-badge">AI</span>
+                                </div>
+                                <div className="bubble-body bubble-thinking-body">
+                                    <span className="thinking-dot" />
+                                    <span className="thinking-dot" />
+                                    <span className="thinking-dot" />
+                                </div>
                             </div>
                         </div>
                     )}
-
                     <div ref={bottomRef} />
                 </div>
             )}

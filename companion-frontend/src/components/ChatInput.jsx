@@ -1,18 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { useAuth } from "../context/AuthContext";
-import { ragChat } from "../services/aiService";
-import { saveMessage, createConversation } from "../services/chatService";
 
-function ChatInput({
-    setMessages,
-    activeConversation,
-    setActiveConversation,
-    setConversations,
-    isLoading,
-    setIsLoading,
-}) {
-    const { user, clearAuth } = useAuth();
-
+function ChatInput({ sendText, isLoading, inputRef }) {
     const [text, setText] = useState("");
     const [listening, setListening] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
@@ -20,6 +8,11 @@ function ChatInput({
     const recognitionRef = useRef(null);
     const fileInputRef = useRef(null);
     const textareaRef = useRef(null);
+
+    // Expose focus to parent via inputRef
+    useEffect(() => {
+        if (inputRef) inputRef.current = textareaRef.current;
+    }, [inputRef]);
 
     // Auto-grow textarea
     useEffect(() => {
@@ -29,73 +22,12 @@ function ChatInput({
         el.style.height = Math.min(el.scrollHeight, 140) + "px";
     }, [text]);
 
-    function chooseFile(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        setSelectedFile(file);
-    }
-
     async function send() {
         if ((!text.trim() && !selectedFile) || isLoading) return;
         const userText = text.trim();
         setText("");
         setSelectedFile(null);
         await sendText(userText);
-    }
-
-    async function sendText(userText) {
-        if (!userText?.trim() || isLoading) return;
-
-        let convId = activeConversation;
-        if (!convId) {
-            try {
-                const conv = await createConversation(user?.id, userText.slice(0, 45) || "New Conversation");
-                convId = conv.id;
-                setActiveConversation(convId);
-                setConversations(prev => [conv, ...prev]);
-            } catch (err) {
-                console.error("Failed to create conversation:", err);
-                if (err.code === "UNAUTHORIZED") {
-                    clearAuth();
-                    window.location.href = "/login";
-                    return;
-                }
-            }
-        }
-
-        const userMsg = { id: Date.now(), sender: "user", text: userText };
-        setMessages(prev => [...prev, userMsg]);
-
-        if (convId) saveMessage(convId, "user", userText).catch(console.error);
-
-        setIsLoading(true);
-        try {
-            const data = await ragChat(userText, convId ? String(convId) : undefined);
-            const reply = data.reply || data.answer || "No response";
-            const botMsg = { id: Date.now() + 1, sender: "bot", text: reply };
-            setMessages(prev => [...prev, botMsg]);
-            if (convId) saveMessage(convId, "bot", reply).catch(console.error);
-            // TTS is NOT auto-triggered — user clicks the speaker button on each message
-        } catch (err) {
-            console.error("RAG chat error:", err);
-            if (err.code === "UNAUTHORIZED") {
-                clearAuth();
-                window.location.href = "/login";
-                return;
-            }
-            setMessages(prev => [
-                ...prev,
-                {
-                    id: Date.now() + 1,
-                    sender: "bot",
-                    text: err.message?.includes("unavailable")
-                        ? "Candor is temporarily unavailable. Please try again in a moment."
-                        : "Sorry, something went wrong. Please try again.",
-                },
-            ]);
-        } finally {
-            setIsLoading(false);
-        }
     }
 
     function handleKeyDown(e) {
@@ -131,10 +63,10 @@ function ChatInput({
     return (
         <div className="input-wrap">
             <input type="file" hidden ref={fileInputRef}
-                accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" onChange={chooseFile} />
+                accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+                onChange={e => setSelectedFile(e.target.files[0] || null)} />
 
             <div className="input-inner">
-                {/* Attach file */}
                 <button type="button" className="input-btn" title="Attach file"
                     onClick={() => fileInputRef.current.click()} aria-label="Attach file">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="17" height="17">
@@ -150,7 +82,9 @@ function ChatInput({
                             </svg>
                             {selectedFile.name}
                             <button type="button" onClick={() => setSelectedFile(null)} aria-label="Remove file">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="12" height="12"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="12" height="12">
+                                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                                </svg>
                             </button>
                         </div>
                     )}
@@ -158,14 +92,13 @@ function ChatInput({
                         ref={textareaRef}
                         rows={1}
                         value={text}
-                        onChange={(e) => setText(e.target.value)}
+                        onChange={e => setText(e.target.value)}
                         onKeyDown={handleKeyDown}
                         placeholder={isLoading ? "Candor is thinking…" : "Ask Candor anything about your policy…"}
                         disabled={isLoading}
                     />
                 </div>
 
-                {/* Send or mic */}
                 {canSend ? (
                     <button type="button" className="input-btn send" onClick={send}
                         disabled={isLoading} aria-label="Send message">
