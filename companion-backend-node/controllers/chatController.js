@@ -58,15 +58,6 @@ exports.deleteConversation = async (req, res) => {
         res.status(500).json({ error: "Failed to delete conversation" });
     }
 };
-    try {
-        const { conversation_id, sender, message } = req.body;
-        const savedMessage = await db.saveMessage({ conversation_id, sender, message });
-        res.json(savedMessage);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Failed saving message" });
-    }
-};
 
 // Save message
 exports.saveMessage = async (req, res) => {
