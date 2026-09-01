@@ -276,7 +276,7 @@ export default function Register() {
 
       <div className="wrap">
         <div className="reg-brand">
-          <span className="brand-medi">Medi</span><span className="brand-care">Care</span>
+          <span className="brand-medi">Medi</span><span className="brand-care">Care</span><span className="brand-dot-navy">.</span>
         </div>
 
         <h1>Create account</h1>

@@ -99,11 +99,17 @@ body.dark .hp-profile-header { background: #0d1117; border-color: #E4032B; }
 
 .hp-profile-avatar {
   width: 72px; height: 72px; border-radius: 50%;
-  background: #E4032B; border: 2px solid rgba(255,255,255,.2);
-  display: flex; align-items: center; justify-content: center;
-  color: #fff; font-size: 24px; font-weight: 800; overflow: hidden;
+  overflow: hidden; display: flex; align-items: center; justify-content: center;
 }
 .hp-profile-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+
+/* nav avatar using SVG */
+.hp-avatar-svg {
+  padding: 0;
+  border-color: transparent;
+  background: transparent;
+  overflow: hidden;
+}
 
 .hp-profile-photo-btn {
   position: absolute; bottom: 0; right: 0;
@@ -492,4 +498,36 @@ body.dark .hp-cat-price { color: #e8eaf0; }
   .hp-policy-actions button { width: 100%; }
   .hp-actions-row { gap: 8px; }
   .hp-action-btn { flex: 1; justify-content: center; padding: 10px 12px; }
+}
+
+/* Brand dot — navy, opposite to the red Medi prefix */
+.hp-brand-btn span:first-child { color: #E4032B; }
+.hp-brand-dot { color: #0F1E4A; font-weight: 900; }
+body.dark .hp-brand-dot { color: #e8eaf0; }
+
+/* ── User avatar SVG — theme-aware ── */
+.user-avatar-svg .avatar-bg {
+  fill: #E5E7EB; /* light gray background */
+}
+.user-avatar-svg .avatar-figure {
+  fill: #0F1E4A; /* navy figure */
+}
+
+body.dark .user-avatar-svg .avatar-bg {
+  fill: #2a3147; /* dark mode: dark blue-gray background */
+}
+body.dark .user-avatar-svg .avatar-figure {
+  fill: #93C5FD; /* dark mode: light blue figure */
+}
+
+/* Nav avatar button — no extra styling, SVG handles it */
+.hp-avatar-svg {
+  padding: 0;
+  background: transparent;
+  border: none;
+  overflow: hidden;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

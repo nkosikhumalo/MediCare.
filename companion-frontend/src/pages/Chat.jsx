@@ -25,7 +25,7 @@ function Chat() {
 
     // Redirect if not logged in
     useEffect(() => {
-        // Auth guard disabled during frontend development
+        if (!token) { navigate("/login"); return; }
         loadConversations();
     }, [token]);
 
@@ -80,6 +80,7 @@ function Chat() {
                 }}
                 loadMessages={loadMessages}
                 onNewChat={startNewChat}
+                setConversations={setConversations}
             />
 
             <div className="chat-main">

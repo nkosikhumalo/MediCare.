@@ -34,3 +34,7 @@ body.dark {
     --muted: #8b95ab;
     --muted-2: #5a6480;
 }
+
+/* Shared brand dot used on Login, Register, Quote pages */
+.brand-dot-navy { color: var(--navy); font-weight: 900; }
+body.dark .brand-dot-navy { color: var(--muted); }

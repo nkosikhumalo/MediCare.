@@ -150,7 +150,7 @@ function Login() {
 
       <div className="wrap">
         <h1 className="login-title">
-          <span className="brand-medi">Medi</span><span className="brand-care">Care</span>
+          <span className="brand-medi">Medi</span><span className="brand-care">Care</span><span className="brand-dot-navy">.</span>
         </h1>
 
         <h2 className="login-heading">Log in</h2>

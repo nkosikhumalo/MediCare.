@@ -38,17 +38,49 @@ const DOCS = [
   { name: "Tax certificate 2025", date: "Issued 28 Feb 2026" },
 ];
 
-// ── Nav defined OUTSIDE Home so it never remounts on view changes ─────────────
+// ── UserAvatar — fits perfectly in its circle, theme-aware ──────────────────
+function UserAvatar({ size = 36 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 40 40"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+      className="user-avatar-svg"
+      style={{ display: "block", flexShrink: 0 }}
+    >
+      {/* Background */}
+      <circle cx="20" cy="20" r="20" className="avatar-bg" />
+      {/* Head — smaller, sits higher */}
+      <circle cx="20" cy="14" r="5.5" className="avatar-figure" />
+      {/* Shoulders — starts at y=22, peak at y=30, well inside circle */}
+      <path d="M8 32 Q8 22 20 22 Q32 22 32 32" className="avatar-figure" />
+    </svg>
+  );
+}
 function HomeNav({ onBack, onGoHome, onViewNotif, darkMode, toggleTheme,
-  profilePic, initials, unreadCount, menuOpen, setMenuOpen, fileRef, onPickPhoto, onLogout }) {
+  userId, unreadCount, menuOpen, setMenuOpen, onLogout }) {
+  const menuRef = useRef(null);
+  useEffect(() => {
+    if (!menuOpen) return;
+    function handleOutside(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
+  }, [menuOpen, setMenuOpen]);
+
   return (
     <header className="hp-nav">
       <div className="hp-nav-inner">
-        <button className="hp-brand-btn" onClick={onGoHome}>Medi<span>Care</span></button>
+        <button className="hp-brand-btn" onClick={onGoHome}>Medi<span>Care</span><span className="hp-brand-dot">.</span></button>
         <div className="hp-nav-right">
           {onBack && <button className="hp-back-btn" onClick={onBack}>← Back</button>}
           <button className="hp-theme-btn" onClick={toggleTheme}>{darkMode ? "Light" : "Dark"}</button>
-          <input type="file" accept="image/*" ref={fileRef} style={{ display: "none" }} onChange={onPickPhoto} />
           <button className="hp-notif-btn" onClick={onViewNotif} aria-label="Notifications">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -56,16 +88,17 @@ function HomeNav({ onBack, onGoHome, onViewNotif, darkMode, toggleTheme,
             </svg>
             {unreadCount > 0 && <span className="hp-notif-badge">{unreadCount}</span>}
           </button>
-          <button className="hp-avatar" onClick={() => setMenuOpen(o => !o)} aria-label="Account menu">
-            {profilePic ? <img src={profilePic} alt="avatar" /> : <span>{initials}</span>}
-          </button>
-          {menuOpen && (
-            <div className="hp-avatar-menu">
-              <button onClick={() => { fileRef.current?.click(); setMenuOpen(false); }}>Change photo</button>
-              <button onClick={() => { onViewNotif(); setMenuOpen(false); }}>Notifications</button>
-              <button className="hp-logout" onClick={onLogout}>Log out</button>
-            </div>
-          )}
+          <div ref={menuRef} style={{ position: "relative" }}>
+            <button className="hp-avatar hp-avatar-svg" onClick={() => setMenuOpen(o => !o)} aria-label="Account menu">
+              <UserAvatar size={34} />
+            </button>
+            {menuOpen && (
+              <div className="hp-avatar-menu">
+                <button onClick={() => { onViewNotif(); setMenuOpen(false); }}>Notifications</button>
+                <button className="hp-logout" onClick={onLogout}>Log out</button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </header>
@@ -76,42 +109,31 @@ export default function Home() {
   const navigate = useNavigate();
   const location = useLocation();
   const { darkMode, toggleTheme } = useTheme();
-  const { user } = useAuth();
-  const [profilePic, setProfilePic] = useState(() => localStorage.getItem("mc-profile-pic") || null);
+  const { user, token } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
-  const fileRef = useRef(null);
 
-  // Drive view from URL query param so browser back/forward works
   const params = new URLSearchParams(location.search);
   const view = params.get("view") || "home";
 
+  useEffect(() => {
+    if (!token) navigate("/login", { state: { from: "/home" }, replace: true });
+  }, [token, navigate]);
+
   function setView(v) {
-    if (v === "home") {
-      navigate("/home", { replace: false });
-    } else {
-      navigate(`/home?view=${v}`);
-    }
+    if (v === "home") navigate("/home", { replace: false });
+    else navigate(`/home?view=${v}`);
   }
 
   const displayName = user?.first_name || user?.username || "Member";
-  const initials = displayName !== "Member" ? displayName.slice(0, 2).toUpperCase() : "MC";
   const userRole = user?.role && ROLE_LABELS.includes(user.role) ? user.role : "Policyholder";
   const unreadCount = NOTIFICATIONS.filter(n => n.unread).length;
-
-  function pickPhoto(e) {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    const reader = new FileReader();
-    reader.onload = () => { setProfilePic(reader.result); localStorage.setItem("mc-profile-pic", reader.result); };
-    reader.readAsDataURL(f);
-  }
+  const userId = user?.id;
 
   const navProps = {
     onGoHome: () => setView("home"),
     onViewNotif: () => setView("notifications"),
-    darkMode, toggleTheme, profilePic, initials, unreadCount,
-    menuOpen, setMenuOpen, fileRef,
-    onPickPhoto: pickPhoto,
+    darkMode, toggleTheme, userId, unreadCount,
+    menuOpen, setMenuOpen,
     onLogout: () => navigate("/"),
   };
 
@@ -191,14 +213,8 @@ export default function Home() {
           <div className="hp-profile-left">
             <div className="hp-profile-avatar-wrap">
               <div className="hp-profile-avatar">
-                {profilePic ? <img src={profilePic} alt="Profile" /> : <span>{initials}</span>}
+                <UserAvatar size={68} />
               </div>
-              <button className="hp-profile-photo-btn" onClick={() => fileRef.current?.click()} aria-label="Change photo">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-                  <circle cx="12" cy="13" r="4" />
-                </svg>
-              </button>
             </div>
             <div className="hp-profile-info">
               <p className="hp-profile-welcome">Welcome, {displayName}<span className="hp-red-dot">.</span></p>

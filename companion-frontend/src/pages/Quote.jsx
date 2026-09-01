@@ -60,7 +60,7 @@ export default function Quote() {
 
             <div className="quote-wrap">
                 <div className="quote-brand">
-                    <span className="brand-medi">Medi</span><span className="brand-care">Care</span>
+                    <span className="brand-medi">Medi</span><span className="brand-care">Care</span><span className="brand-dot-navy">.</span>
                 </div>
                 <h1>Get a quote</h1>
                 <p className="quote-sub">Fill in your details and choose how you'd like to hear from us.</p>

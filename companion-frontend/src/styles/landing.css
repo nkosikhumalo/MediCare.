@@ -979,3 +979,6 @@
   line-height: 1.25; margin: 10px 0 14px;
 }
 .landing-page .lp-split-copy p { font-size: 15px; color: var(--lp-grey); line-height: 1.7; }
+
+/* Brand dot */
+.landing-page .lp-brand-dot { color: var(--lp-ink); font-weight: 900; }
