@@ -21,3 +21,10 @@ export async function saveMessage(conversationId, sender, message) {
         body: JSON.stringify({ conversation_id: conversationId, sender, message }),
     });
 }
+
+export async function deleteConversation(conversationId) {
+    // The backend enforces ownership via JWT — frontend only sends the id
+    return apiFetch(`/api/chat/conversations/${conversationId}`, {
+        method: "DELETE",
+    });
+}
