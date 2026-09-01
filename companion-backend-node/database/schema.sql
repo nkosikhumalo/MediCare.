@@ -5,6 +5,11 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(255) UNIQUE NOT NULL,
     username VARCHAR(100) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
+    phone VARCHAR(20),
+    date_of_birth DATE,
+    id_number VARCHAR(50),
+    passport_number VARCHAR(100),
+    country_of_issue VARCHAR(100),
     -- ROLE_POLICYHOLDER | ROLE_BENEFICIARY
     role VARCHAR(50) DEFAULT 'ROLE_POLICYHOLDER',
     -- Stable policy identifier — used as policyId claim in JWT so Java's

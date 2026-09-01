@@ -8,6 +8,11 @@ async function createUser(user) {
     username,
     password,
     role,
+    phone,
+    date_of_birth,
+    id_number,
+    passport_number,
+    country_of_issue,
   } = user;
 
   return db.createUser({
@@ -17,6 +22,11 @@ async function createUser(user) {
     username,
     password,
     role,
+    phone,
+    date_of_birth,
+    id_number,
+    passport_number,
+    country_of_issue,
   });
 }
 

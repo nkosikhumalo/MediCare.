@@ -6,18 +6,18 @@ require("dotenv").config();
 
 const poolConfig = process.env.DATABASE_URL
   ? {
-      connectionString: process.env.DATABASE_URL,
-      ssl: process.env.DATABASE_SSL === "false"
-        ? false
-        : { rejectUnauthorized: false },
-    }
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.DATABASE_SSL === "false"
+      ? false
+      : { rejectUnauthorized: false },
+  }
   : {
-      user: process.env.DB_USER,
-      host: process.env.DB_HOST,
-      database: process.env.DB_NAME,
-      password: process.env.DB_PASSWORD,
-      port: process.env.DB_PORT,
-    };
+    user: process.env.DB_USER,
+    host: process.env.DB_HOST,
+    database: process.env.DB_NAME,
+    password: process.env.DB_PASSWORD,
+    port: process.env.DB_PORT,
+  };
 
 const pool = new Pool(poolConfig);
 
@@ -64,7 +64,19 @@ connect();
 async function createUser(user) {
   await initializeSchema();
 
-  const { first_name, last_name, email, username, password, role } = user;
+  const {
+    first_name,
+    last_name,
+    email,
+    username,
+    password,
+    role,
+    phone,
+    date_of_birth,
+    id_number,
+    passport_number,
+    country_of_issue,
+  } = user;
 
   const existing = await findUserByEmail(email);
   if (existing) {
@@ -73,11 +85,11 @@ async function createUser(user) {
 
   const result = await pool.query(
     `
-      INSERT INTO users (first_name, last_name, email, username, password, role)
-      VALUES ($1, $2, $3, $4, $5, $6)
-      RETURNING id, first_name, last_name, email, username, role, created_at
+      INSERT INTO users (first_name, last_name, email, username, password, role, phone, date_of_birth, id_number, passport_number, country_of_issue)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      RETURNING id, first_name, last_name, email, username, role, phone, date_of_birth, created_at
     `,
-    [first_name, last_name, email, username, password, role || "policy_holder"]
+    [first_name, last_name, email, username, password, role || "ROLE_POLICYHOLDER", phone, date_of_birth, id_number, passport_number, country_of_issue]
   );
 
   return result.rows[0];
