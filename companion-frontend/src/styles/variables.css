@@ -1,28 +1,34 @@
 :root {
-    --red: #EB2E2E;
-    --red-dark: #c42020;
-    --red-soft: #fff0f0;
-    --navy: #0F1E4A;
-    --navy-light: #1B2A4A;
+    --red: #E4032B;
+    --red-dark: #B8001F;
+    --red-soft: #FEF2F2;
+    --navy: #111827;
+    --navy-light: #1F2937;
 
-    --bg: #f5f6fa;
+    --bg: #F4F5F7;
     --surface: #ffffff;
-    --surface-2: #f0f1f5;
-    --border: #e4e6ed;
+    --surface-2: #F9FAFB;
+    --border: #E5E7EB;
     --text: #111827;
-    --muted: #6b7280;
-    --muted-2: #9ca3af;
+    --muted: #6B7280;
+    --muted-2: #9CA3AF;
 
     --radius-sm: 8px;
-    --radius-md: 14px;
-    --radius-lg: 20px;
-    --radius-xl: 28px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 20px;
 
-    --shadow-sm: 0 1px 4px rgba(0, 0, 0, .06);
-    --shadow-md: 0 4px 18px rgba(0, 0, 0, .09);
-    --shadow-lg: 0 10px 40px rgba(0, 0, 0, .13);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, .05);
+    --shadow-md: 0 2px 8px rgba(0, 0, 0, .08);
+    --shadow-lg: 0 4px 16px rgba(0, 0, 0, .1);
 
     --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+
+    --chat-ai-name: #111827;
+    --chat-user-name: #1D4ED8;
+    --chat-ai-avatar-bg: #E4032B;
+    --chat-user-avatar-bg: #E5E7EB;
+    --chat-user-avatar-figure: #374151;
 }
 
 body.dark {
@@ -33,6 +39,12 @@ body.dark {
     --text: #e8eaf0;
     --muted: #8b95ab;
     --muted-2: #5a6480;
+
+    --chat-ai-name: #e8eaf0;
+    --chat-user-name: #60A5FA;
+    --chat-ai-avatar-bg: #E4032B;
+    --chat-user-avatar-bg: #2a3147;
+    --chat-user-avatar-figure: #93C5FD;
 }
 
 /* Shared brand dot used on Login, Register, Quote pages */

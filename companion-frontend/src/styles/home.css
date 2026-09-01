@@ -39,7 +39,7 @@ body.dark .hp-theme-btn { background: #1e2535; border-color: #2a3147; color: #8b
   border-radius: 8px; width: 36px; height: 36px;
   display: flex; align-items: center; justify-content: center; color: #6B7280;
 }
-body.dark .hp-notif-btn { border-color: #2a3147; }
+body.dark .hp-notif-btn { border-color: #2a3147; color: #fff; }
 .hp-notif-btn:hover { border-color: #E4032B; color: #E4032B; }
 .hp-notif-btn svg { width: 18px; height: 18px; }
 
@@ -98,7 +98,7 @@ body.dark .hp-profile-header { background: #0d1117; border-color: #E4032B; }
 .hp-profile-avatar-wrap { position: relative; flex-shrink: 0; margin-top: 2px; }
 
 .hp-profile-avatar {
-  width: 72px; height: 72px; border-radius: 50%;
+  width: 52px; height: 52px; border-radius: 50%;
   overflow: hidden; display: flex; align-items: center; justify-content: center;
 }
 .hp-profile-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
@@ -171,6 +171,7 @@ body.dark .hp-stat-divider { background: rgba(255,255,255,.07); }
 }
 body.dark .hp-action-btn { background: #161b27; border-color: #2a3147; color: #e8eaf0; }
 .hp-action-btn svg { width: 16px; height: 16px; color: #E4032B; flex-shrink: 0; }
+body.dark .hp-action-btn svg { color: #fff; }
 .hp-action-btn:hover { border-color: #E4032B; box-shadow: 0 2px 10px rgba(228,3,43,.1); }
 
 .hp-action-dot {
@@ -332,12 +333,11 @@ body.dark .hp-claims-amount { color: #e8eaf0; }
 
 .hp-benefit-card {
   background: #fff; border: 1px solid #E5E7EB;
-  border-radius: 14px; overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0,0,0,.04);
-  transition: box-shadow .15s, transform .15s;
+  border-radius: 10px; overflow: hidden;
 }
 body.dark .hp-benefit-card { background: #161b27; border-color: #2a3147; }
-.hp-benefit-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,.08); transform: translateY(-2px); }
+.hp-benefit-card:hover { border-color: #D1D5DB; }
+body.dark .hp-benefit-card:hover { border-color: #3d4663; }
 
 .hp-benefit-card img {
   width: 100%; height: 140px; object-fit: cover; display: block;
@@ -355,6 +355,58 @@ body.dark .hp-benefit-body h4 { color: #e8eaf0; }
   font-size: 13px; font-weight: 600; padding: 0; cursor: pointer;
 }
 .hp-benefit-link:hover { text-decoration: underline; }
+
+/* ── Benefit detail modal ── */
+.hp-benefit-modal-backdrop {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0, 0, 0, .5);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+
+.hp-benefit-modal {
+  background: #fff; border-radius: 10px;
+  max-width: 480px; width: 100%;
+  overflow: hidden; position: relative;
+  border: 1px solid #E5E7EB;
+}
+body.dark .hp-benefit-modal { background: #161b27; border-color: #2a3147; }
+
+.hp-benefit-modal-close {
+  position: absolute; top: 12px; right: 12px; z-index: 2;
+  width: 32px; height: 32px; border-radius: 6px;
+  border: 1px solid #E5E7EB; background: #fff;
+  display: flex; align-items: center; justify-content: center;
+  color: #6B7280; cursor: pointer;
+}
+body.dark .hp-benefit-modal-close { background: #1e2535; border-color: #2a3147; color: #e8eaf0; }
+.hp-benefit-modal-close:hover { border-color: #E4032B; color: #E4032B; }
+
+.hp-benefit-modal-img {
+  width: 100%; height: 160px; object-fit: cover; display: block;
+}
+
+.hp-benefit-modal-body { padding: 20px 22px 24px; }
+
+.hp-benefit-modal-body h3 {
+  font-size: 18px; font-weight: 700; color: #111827; margin: 0 0 8px;
+}
+body.dark .hp-benefit-modal-body h3 { color: #e8eaf0; }
+
+.hp-benefit-modal-summary {
+  font-size: 14px; color: #6B7280; line-height: 1.5; margin: 0 0 16px;
+}
+
+.hp-benefit-modal-list {
+  margin: 0 0 20px; padding-left: 18px;
+  font-size: 13.5px; color: #374151; line-height: 1.6;
+}
+body.dark .hp-benefit-modal-list { color: #c5cad6; }
+
+.hp-benefit-modal-list li { margin-bottom: 6px; }
+.hp-benefit-modal-list li:last-child { margin-bottom: 0; }
+
+.hp-benefit-modal-btn { width: 100%; justify-content: center; }
 
 /* ── Documents ── */
 .hp-docs-list {
@@ -392,6 +444,7 @@ body.dark .hp-doc-info span:first-child { color: #e8eaf0; }
   justify-content: center; color: #6B7280; flex-shrink: 0;
   transition: border-color .15s;
 }
+body.dark .hp-doc-download { border-color: #2a3147; color: #fff; }
 .hp-doc-download svg { width: 16px; height: 16px; }
 .hp-doc-download:hover { border-color: #E4032B; color: #E4032B; }
 
@@ -433,12 +486,12 @@ body.dark .hp-notif-body p { color: #e8eaf0; }
 @media (min-width: 1040px) { .hp-catalogue-grid { grid-template-columns: repeat(3, 1fr); } }
 
 .hp-cat-card {
-  background: #fff; border: 1px solid #E5E7EB; border-radius: 14px;
+  background: #fff; border: 1px solid #E5E7EB; border-radius: 10px;
   overflow: hidden; display: flex; flex-direction: column;
-  box-shadow: 0 1px 3px rgba(0,0,0,.04); transition: box-shadow .15s, transform .15s;
 }
 body.dark .hp-cat-card { background: #161b27; border-color: #2a3147; }
-.hp-cat-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,.09); transform: translateY(-2px); }
+.hp-cat-card:hover { border-color: #D1D5DB; }
+body.dark .hp-cat-card:hover { border-color: #3d4663; }
 
 .hp-cat-img { position: relative; height: 150px; overflow: hidden; }
 .hp-cat-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
