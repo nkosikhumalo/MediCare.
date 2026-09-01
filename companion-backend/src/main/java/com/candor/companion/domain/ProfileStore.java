@@ -23,24 +23,35 @@ public class ProfileStore {
 
     public ProfileStore() {
         // ── POL-1001 : Active Policyholder ─────────────────────────────────────
-        // Sipho Dlamini — full POLICYHOLDER access.
-        // Can ask about cover, premiums, what-if scenarios, and self-service.
         profilesByPolicyId.put("POL-1001",
                 new PolicyProfile("POL-1001", "sipho-policyholder-1001", "lerato-beneficiary-1001", false));
 
         // ── POL-2002 : Active Beneficiary on a live policy ─────────────────────
-        // Lerato Mokoena — BENEFICIARY on a live policy.
-        // Can ask Q&A and claims questions; blocked from what-if and self-service.
         profilesByPolicyId.put("POL-2002",
                 new PolicyProfile("POL-2002", "sipho-policyholder-2002", "lerato-beneficiary-2002", false));
 
         // ── POL-3003 : Deceased policyholder — Empathetic Claims Mode ──────────
-        // Thandi Nkosi — beneficiary where the policyholder has died.
-        // Java filter demotes any POLICYHOLDER claim to BENEFICIARY server-side.
-        // GroundedChatService activates Empathetic Claims Mode (deceasedFlag=true),
-        // restricts RAG to DEATH_CLAIMS chunks, uses the empathetic system prompt.
         profilesByPolicyId.put("POL-3003",
                 new PolicyProfile("POL-3003", "sipho-policyholder-3003", "thandi-beneficiary-3003", true));
+
+        // ── Test users seeded in Supabase ──────────────────────────────────────
+        profilesByPolicyId.put("POL-NTANDO-001",
+                new PolicyProfile("POL-NTANDO-001", "user-policyholder-19", "ntando.sibiya.ben@candor.local", false));
+
+        profilesByPolicyId.put("POL-YOLANDA-001",
+                new PolicyProfile("POL-YOLANDA-001", "user-policyholder-21", "yolanda.mthembu.ben@candor.local", false));
+
+        profilesByPolicyId.put("POL-BOPHELO-001",
+                new PolicyProfile("POL-BOPHELO-001", "user-policyholder-23", "bophelo.makuzeni.ben@candor.local", false));
+
+        profilesByPolicyId.put("POL-LIKHONA-001",
+                new PolicyProfile("POL-LIKHONA-001", "user-policyholder-25", "likhona.tshemese.ben@candor.local", false));
+
+        profilesByPolicyId.put("POL-NKOSIMPHILE-001",
+                new PolicyProfile("POL-NKOSIMPHILE-001", "user-policyholder-27", "nkosimphile.khumalo.ben@candor.local", false));
+
+        profilesByPolicyId.put("POL-KAGISO-001",
+                new PolicyProfile("POL-KAGISO-001", "user-policyholder-29", "kagiso.ntsoane.ben@candor.local", false));
     }
 
     public Optional<PolicyProfile> findByPolicyId(String policyId) {
