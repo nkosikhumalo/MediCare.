@@ -36,4 +36,12 @@ router.post(
     chatController.saveMessage
 );
 
+// Delete conversation — JWT ownership check inside controller, no raw SQL from client
+router.delete(
+    "/conversations/:id",
+    authenticate,
+    requireRole.anyRole(),
+    chatController.deleteConversation
+);
+
 module.exports = router;

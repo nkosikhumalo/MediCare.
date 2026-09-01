@@ -126,6 +126,16 @@ async function getMessages(conversationId) {
   return result.rows;
 }
 
+async function deleteConversation(conversationId, userId) {
+  await initializeSchema();
+  // Parameterized query — conversation id and user id come from JWT, never raw client input
+  const result = await pool.query(
+    "DELETE FROM conversations WHERE id = $1 AND user_id = $2 RETURNING id",
+    [conversationId, userId]
+  );
+  return result.rowCount > 0;
+}
+
 async function saveMessage({ conversation_id, sender, message }) {
   await initializeSchema();
 
@@ -169,4 +179,5 @@ module.exports = {
   getConversations,
   getMessages,
   saveMessage,
+  deleteConversation,
 };
