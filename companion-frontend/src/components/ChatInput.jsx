@@ -1,7 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useLanguage } from "../context/LanguageContext";
 import { useAuth } from "../context/AuthContext";
-import { speak } from "../services/speechService";
 import { ragChat } from "../services/aiService";
 import { saveMessage, createConversation } from "../services/chatService";
 
@@ -13,7 +11,6 @@ function ChatInput({
     isLoading,
     setIsLoading,
 }) {
-    const { language } = useLanguage();
     const { user, clearAuth } = useAuth();
 
     const [text, setText] = useState("");
@@ -23,12 +20,6 @@ function ChatInput({
     const recognitionRef = useRef(null);
     const fileInputRef = useRef(null);
     const textareaRef = useRef(null);
-
-    const languageMap = {
-        EN: "en-ZA", AF: "af-ZA", ZU: "zu-ZA", XH: "xh-ZA",
-        ST: "st-ZA", TN: "tn-ZA", SS: "ss-ZA", VE: "ve-ZA",
-        TS: "ts-ZA", NR: "nr-ZA", NSO: "nso-ZA",
-    };
 
     // Auto-grow textarea
     useEffect(() => {
@@ -84,7 +75,7 @@ function ChatInput({
             const botMsg = { id: Date.now() + 1, sender: "bot", text: reply };
             setMessages(prev => [...prev, botMsg]);
             if (convId) saveMessage(convId, "bot", reply).catch(console.error);
-            speak(reply, language);
+            // TTS is NOT auto-triggered — user clicks the speaker button on each message
         } catch (err) {
             console.error("RAG chat error:", err);
             if (err.code === "UNAUTHORIZED") {
@@ -116,9 +107,9 @@ function ChatInput({
 
     function startListening() {
         const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SR) { alert("Speech recognition not supported."); return; }
+        if (!SR) { alert("Speech recognition not supported in this browser."); return; }
         const r = new SR();
-        r.lang = languageMap[language] || "en-ZA";
+        r.lang = "en-ZA";
         r.interimResults = true;
         r.continuous = false;
         r.onstart = () => setListening(true);
@@ -143,16 +134,24 @@ function ChatInput({
                 accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" onChange={chooseFile} />
 
             <div className="input-inner">
+                {/* Attach file */}
                 <button type="button" className="input-btn" title="Attach file"
-                    onClick={() => fileInputRef.current.click()}>
-                    📎
+                    onClick={() => fileInputRef.current.click()} aria-label="Attach file">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="17" height="17">
+                        <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66L9.41 17.41a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                    </svg>
                 </button>
 
                 <div className="input-field">
                     {selectedFile && (
                         <div className="selected-file">
-                            📄 {selectedFile.name}
-                            <button type="button" onClick={() => setSelectedFile(null)}>✕</button>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="13" height="13" style={{ marginRight: 5 }}>
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" />
+                            </svg>
+                            {selectedFile.name}
+                            <button type="button" onClick={() => setSelectedFile(null)} aria-label="Remove file">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="12" height="12"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                            </button>
                         </div>
                     )}
                     <textarea
@@ -166,17 +165,32 @@ function ChatInput({
                     />
                 </div>
 
+                {/* Send or mic */}
                 {canSend ? (
                     <button type="button" className="input-btn send" onClick={send}
-                        disabled={isLoading} title="Send">
-                        ↑
+                        disabled={isLoading} aria-label="Send message">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+                            <line x1="12" y1="19" x2="12" y2="5" />
+                            <polyline points="5 12 12 5 19 12" />
+                        </svg>
                     </button>
                 ) : (
                     <button type="button"
                         className={`input-btn ${listening ? "listening" : ""}`}
                         onClick={listening ? stopListening : startListening}
-                        title={listening ? "Stop listening" : "Voice input"}>
-                        {listening ? "🎤" : "🎙"}
+                        aria-label={listening ? "Stop recording" : "Start voice input"}>
+                        {listening ? (
+                            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                                <rect x="6" y="6" width="12" height="12" rx="2" />
+                            </svg>
+                        ) : (
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" width="16" height="16">
+                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                                <line x1="12" y1="19" x2="12" y2="23" />
+                                <line x1="8" y1="23" x2="16" y2="23" />
+                            </svg>
+                        )}
                     </button>
                 )}
             </div>
