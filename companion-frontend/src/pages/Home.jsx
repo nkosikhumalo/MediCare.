@@ -38,6 +38,48 @@ const DOCS = [
   { name: "Tax certificate 2025", date: "Issued 28 Feb 2026" },
 ];
 
+const BENEFITS = [
+  {
+    id: "wellness",
+    title: "Wellness rewards",
+    summary: "Earn points for gym visits, health checks, and healthy habits.",
+    img: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=200&fit=crop&auto=format&q=70",
+    cta: "Learn more",
+    details: [
+      "Earn 50 points per gym visit, up to 4 visits per month.",
+      "500 bonus points for completing an annual health screening.",
+      "Points can be redeemed for premium discounts, fitness gear, or grocery vouchers.",
+      "Track your progress in the MediCare member app under Rewards.",
+    ],
+  },
+  {
+    id: "telemedicine",
+    title: "Telemedicine",
+    summary: "Consult a doctor 24/7 via video or phone at no extra cost.",
+    img: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=200&fit=crop&auto=format&q=70",
+    cta: "Book now",
+    details: [
+      "Speak to a GP anytime — no appointment needed.",
+      "Includes prescriptions sent directly to your nearest pharmacy.",
+      "Available to all Essential Smart and LifeGuard Plus members.",
+      "Average wait time is under 8 minutes. Use the member app or call 0800 634 227.",
+    ],
+  },
+  {
+    id: "cashback",
+    title: "Premium cashback",
+    summary: "Get up to 30% of your premiums back for claim-free years.",
+    img: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400&h=200&fit=crop&auto=format&q=70",
+    cta: "View details",
+    details: [
+      "After 12 consecutive claim-free months you earn 10% cashback on premiums paid.",
+      "This increases by 10% each claim-free year, capped at 30%.",
+      "Cashback is paid as a credit on your January premium.",
+      "One qualifying claim resets the counter — hospital admissions count, GP visits do not.",
+    ],
+  },
+];
+
 // ── UserAvatar — fits perfectly in its circle, theme-aware ──────────────────
 function UserAvatar({ size = 36 }) {
   return (
@@ -111,6 +153,7 @@ export default function Home() {
   const { darkMode, toggleTheme } = useTheme();
   const { user, token } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [benefitModal, setBenefitModal] = useState(null);
 
   const params = new URLSearchParams(location.search);
   const view = params.get("view") || "home";
@@ -191,7 +234,9 @@ export default function Home() {
                     </ul>
                     <div className="hp-cat-footer">
                       <span className="hp-cat-price">{p.premium}</span>
-                      <button className="hp-btn-primary" onClick={() => navigate("/chat")}>Ask Candor</button>
+                      <button className="hp-btn-primary" onClick={() =>
+                        navigate("/chat", { state: { catalogueCard: p } })
+                      }>Ask Candor</button>
                     </div>
                   </div>
                 </div>
@@ -213,7 +258,7 @@ export default function Home() {
           <div className="hp-profile-left">
             <div className="hp-profile-avatar-wrap">
               <div className="hp-profile-avatar">
-                <UserAvatar size={68} />
+                <UserAvatar size={48} />
               </div>
             </div>
             <div className="hp-profile-info">
@@ -293,7 +338,9 @@ export default function Home() {
                     <div className="hp-policy-row"><span>Next payment</span><span>{p.next}</span></div>
                   </div>
                   <div className="hp-policy-actions">
-                    <button className="hp-btn-outline" onClick={() => navigate("/chat")}>Ask Candor</button>
+                    <button className="hp-btn-outline" onClick={() =>
+                      navigate("/chat", { state: { policyCard: p } })
+                    }>Ask Candor</button>
                     <button className="hp-btn-ghost">View details</button>
                   </div>
                 </div>
@@ -334,30 +381,16 @@ export default function Home() {
               <h2>Your benefits</h2>
             </div>
             <div className="hp-benefits-grid">
-              <div className="hp-benefit-card">
-                <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=200&fit=crop&auto=format&q=70" alt="Wellness" />
-                <div className="hp-benefit-body">
-                  <h4>Wellness rewards</h4>
-                  <p>Earn points for gym visits, health checks, and healthy habits.</p>
-                  <button className="hp-benefit-link" onClick={() => navigate("/chat")}>Learn more</button>
+              {BENEFITS.map(b => (
+                <div key={b.id} className="hp-benefit-card">
+                  <img src={b.img} alt={b.title} />
+                  <div className="hp-benefit-body">
+                    <h4>{b.title}</h4>
+                    <p>{b.summary}</p>
+                    <button className="hp-benefit-link" onClick={() => setBenefitModal(b)}>{b.cta}</button>
+                  </div>
                 </div>
-              </div>
-              <div className="hp-benefit-card">
-                <img src="https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=200&fit=crop&auto=format&q=70" alt="Telemedicine" />
-                <div className="hp-benefit-body">
-                  <h4>Telemedicine</h4>
-                  <p>Consult a doctor 24/7 via video or phone at no extra cost.</p>
-                  <button className="hp-benefit-link" onClick={() => navigate("/chat")}>Book now</button>
-                </div>
-              </div>
-              <div className="hp-benefit-card">
-                <img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400&h=200&fit=crop&auto=format&q=70" alt="Cashback" />
-                <div className="hp-benefit-body">
-                  <h4>Premium cashback</h4>
-                  <p>Get up to 30% of your premiums back for claim-free years.</p>
-                  <button className="hp-benefit-link" onClick={() => navigate("/chat")}>View details</button>
-                </div>
-              </div>
+              ))}
             </div>
           </section>
 
@@ -393,6 +426,27 @@ export default function Home() {
         </svg>
         <span>Ask Candor</span>
       </button>
+
+      {benefitModal && (
+        <div className="hp-benefit-modal-backdrop" onClick={() => setBenefitModal(null)}>
+          <div className="hp-benefit-modal" onClick={e => e.stopPropagation()}>
+            <button className="hp-benefit-modal-close" onClick={() => setBenefitModal(null)} aria-label="Close">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+            <img src={benefitModal.img} alt={benefitModal.title} className="hp-benefit-modal-img" />
+            <div className="hp-benefit-modal-body">
+              <h3>{benefitModal.title}</h3>
+              <p className="hp-benefit-modal-summary">{benefitModal.summary}</p>
+              <ul className="hp-benefit-modal-list">
+                {benefitModal.details.map(d => <li key={d}>{d}</li>)}
+              </ul>
+              <button className="hp-btn-primary hp-benefit-modal-btn" onClick={() => setBenefitModal(null)}>Got it</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

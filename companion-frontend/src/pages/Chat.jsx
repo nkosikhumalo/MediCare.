@@ -1,35 +1,65 @@
-import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef, useLayoutEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import Sidebar from "../components/Sidebar";
 import ChatHeader from "../components/ChatHeader";
 import MessageList from "../components/MessageList";
 import ChatInput from "../components/ChatInput";
 import { useAuth } from "../context/AuthContext";
+import { useChat, createPolicyContextMessage } from "../hooks/useChat";
 import { getConversations, getMessages } from "../services/chatService";
 
 import "../styles/chat.css";
 
+function getInitialMessages(state) {
+    if (state?.policyCard) return [createPolicyContextMessage(state.policyCard, false)];
+    if (state?.catalogueCard) return [createPolicyContextMessage(state.catalogueCard, true)];
+    return [];
+}
+
 function Chat() {
     const { token, user } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
     const userId = user?.id;
 
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [messages, setMessages] = useState([]);
+    const [messages, setMessages] = useState(() => getInitialMessages(location.state));
     const [conversations, setConversations] = useState([]);
     const [activeConversation, setActiveConversation] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
 
     const bottomRef = useRef(null);
+    const inputRef = useRef(null);
+    const policyFlowStarted = useRef(false);
 
-    // Redirect if not logged in
+    const { sendText, startQuickFlow, startPolicyContextFlow, onChipSelect, onActionSelect } = useChat({
+        activeConversation,
+        setActiveConversation,
+        setMessages,
+        setConversations,
+        isLoading,
+        setIsLoading,
+    });
+
     useEffect(() => {
         if (!token) { navigate("/login"); return; }
         loadConversations();
     }, [token]);
 
-    // Auto-scroll to bottom on new messages or loading state
+    // Bootstrap policy flow immediately — messages already set synchronously on mount
+    useLayoutEffect(() => {
+        const state = location.state;
+        if (!state || policyFlowStarted.current) return;
+        if (!state.policyCard && !state.catalogueCard) return;
+
+        policyFlowStarted.current = true;
+        const policy = state.policyCard || state.catalogueCard;
+        const isCatalogue = !!state.catalogueCard;
+        navigate("/chat", { replace: true, state: null });
+        startPolicyContextFlow({ policy, isCatalogue, skipSetMessages: true });
+    }, [location.state]);
+
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages, isLoading]);
@@ -38,15 +68,9 @@ function Chat() {
         if (!userId) return;
         try {
             const data = await getConversations(userId);
-            const list = Array.isArray(data) ? data : [];
-            setConversations(list);
-            // Do NOT auto-select — user starts fresh every session.
-            // They pick from sidebar or just type to create a new one.
+            setConversations(Array.isArray(data) ? data : []);
         } catch (err) {
-            console.error("Failed loading conversations:", err);
-            if (err.code === "UNAUTHORIZED") {
-                navigate("/login");
-            }
+            if (err.code === "UNAUTHORIZED") navigate("/login");
         }
     }
 
@@ -55,7 +79,6 @@ function Chat() {
         try {
             const data = await getMessages(conversationId);
             const rows = Array.isArray(data) ? data : [];
-            // Normalize DB rows (field: message) to UI shape (field: text)
             setMessages(rows.map(r => ({ ...r, text: r.message || r.text })));
         } catch (err) {
             console.error("Failed loading messages:", err);
@@ -86,15 +109,22 @@ function Chat() {
             <div className="chat-main">
                 <ChatHeader openSidebar={() => setSidebarOpen(true)} />
 
-                <MessageList messages={messages} isLoading={isLoading} bottomRef={bottomRef} />
+                <MessageList
+                    messages={messages}
+                    isLoading={isLoading}
+                    bottomRef={bottomRef}
+                    onQuickStart={startQuickFlow}
+                    onFocusInput={() => inputRef.current?.focus()}
+                    onChipSelect={onChipSelect}
+                    onActionSelect={onActionSelect}
+                    activeConversation={activeConversation}
+                    userName={user?.first_name || user?.username || "You"}
+                />
 
                 <ChatInput
-                    activeConversation={activeConversation}
-                    setActiveConversation={setActiveConversation}
-                    setMessages={setMessages}
-                    setConversations={setConversations}
+                    sendText={sendText}
                     isLoading={isLoading}
-                    setIsLoading={setIsLoading}
+                    inputRef={inputRef}
                 />
             </div>
         </div>
