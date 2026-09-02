@@ -252,9 +252,7 @@ public class ChunkRepository {
                 "a", "an", "the", "is", "are", "was", "were", "be", "been", "being",
                 "of", "to", "in", "on", "for", "with", "about", "from", "by", "as",
                 "at", "or", "and", "but", "if", "then", "so", "do", "does", "did",
-                "can", "could", "would", "should", "will", "just", "any", "my", "your",
-                "our", "their", "this", "that", "these", "those", "what", "which",
-                "who", "how", "much", "many", "me", "please", "tell", "give", "show",
+                "me", "please", "tell", "give", "show",
                 "i", "you", "it", "its"
         );
 
@@ -268,8 +266,34 @@ public class ChunkRepository {
                 Map.entry("cheap", List.of("premium", "fee", "discount")),
                 Map.entry("amount", List.of("premium", "fee", "benefit")),
                 Map.entry("monthly", List.of("month", "premium", "fee")),
-                Map.entry("start", List.of("minimum", "premium")),
-                Map.entry("starting", List.of("minimum", "premium"))
+                Map.entry("start", List.of("minimum", "premium", "starting")),
+                Map.entry("starting", List.of("minimum", "premium")),
+                Map.entry("cancel", List.of("lapse", "cooling", "cancellation")),
+                Map.entry("cancelled", List.of("lapse", "cooling")),
+                Map.entry("miss", List.of("arrear", "lapse", "grace")),
+                Map.entry("missed", List.of("arrear", "lapse", "grace")),
+                Map.entry("late", List.of("arrear", "grace", "lapse")),
+                Map.entry("die", List.of("death", "deceased", "beneficiary")),
+                Map.entry("dies", List.of("death", "deceased", "beneficiary")),
+                Map.entry("death", List.of("deceased", "beneficiary", "claim")),
+                Map.entry("claim", List.of("death", "benefit", "payout")),
+                Map.entry("pay", List.of("premium", "payment", "debit")),
+                Map.entry("payment", List.of("premium", "debit", "fee")),
+                Map.entry("increase", List.of("escalation", "premium", "benefit")),
+                Map.entry("change", List.of("alteration", "update", "amendment")),
+                Map.entry("update", List.of("alteration", "change")),
+                Map.entry("bank", List.of("debit", "payment", "bank")),
+                Map.entry("address", List.of("self-service", "contact")),
+                Map.entry("owner", List.of("policyholder", "ownership")),
+                Map.entry("person", List.of("policyholder", "insured", "beneficiary")),
+                Map.entry("people", List.of("policyholder", "insured", "beneficiary")),
+                Map.entry("cover", List.of("benefit", "sum assured", "policy")),
+                Map.entry("covered", List.of("benefit", "policy", "insured")),
+                Map.entry("insured", List.of("life", "benefit", "cover")),
+                Map.entry("refund", List.of("cooling", "reinstatement", "lapse")),
+                Map.entry("restart", List.of("reinstatement", "lapse")),
+                Map.entry("reinstated", List.of("reinstatement", "lapse")),
+                Map.entry("stop", List.of("cancel", "lapse", "suspend"))
         );
 
         LinkedHashSet<String> terms = new LinkedHashSet<>();
@@ -289,6 +313,13 @@ public class ChunkRepository {
             terms.add("premium");
             terms.add("fee");
             terms.add("minimum");
+        }
+
+        // If query is very short and we have almost no terms, use the raw words
+        if (terms.size() < 2) {
+            for (String word : words) {
+                if (word.length() >= 2) terms.add(word);
+            }
         }
 
         return new ArrayList<>(terms);

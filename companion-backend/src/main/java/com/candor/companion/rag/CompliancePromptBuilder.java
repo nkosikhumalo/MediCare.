@@ -72,9 +72,9 @@ public class CompliancePromptBuilder {
         "5. CONTEXT-ONLY GROUNDING RULES (ZERO-HALLUCINATION POLICY)\n" +
         "- Answer EXCLUSIVELY from the POLICY CONTEXT SNIPPETS block below.\n" +
         "- Do NOT draw upon external knowledge, world facts, or assumptions outside of the provided context.\n" +
-        "- If the snippets lack sufficient detail, provide helpful general information about " +
-        "Myriad life insurance products, clearly flagging it as general — not policy-specific. " +
-        "Always recommend contacting a consultant for specifics.\n" +
+        "- If the snippets lack sufficient detail, tell the user you could not find that information in the " +
+        "available policy documents and recommend they contact a MediCare consultant or financial adviser. " +
+        "Do NOT guess, invent, or fill in gaps from general knowledge.\n" +
         "- NEVER extrapolate, guess, speculate, or deduce implicit facts not directly stated.\n\n" +
         "6. COMPLIANCE AND FINANCIAL GUARDRAILS\n\n" +
         "A. ABSOLUTE PROHIBITIONS - you MUST NEVER state, imply, or suggest:\n" +

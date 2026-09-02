@@ -85,7 +85,25 @@ public class ComplianceGuardrailService {
             "minimum contract premium",
             "minimum premium",
             "contractual premium",
-            "documented in"
+            "documented in",
+            // Additional terms to reduce false-positive guardrail firing
+            "per month",
+            "a month",
+            "monthly",
+            "annual",
+            "discount",
+            "fee is",
+            "premium is",
+            "costs",
+            "from r",
+            "r\\d",
+            "the policy fee",
+            "the contract",
+            "myriad",
+            "section",
+            "benefit",
+            "policy document",
+            "guide"
     );
 
     private static final String COMPLIANCE_REDIRECT =

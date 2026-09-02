@@ -41,7 +41,7 @@ public class RagStartupLoader {
 
     // Update this version string whenever the source document changes
     // to force a re-ingestion on next startup.
-    private static final String DOCUMENT_VERSION = "v3.0";
+    private static final String DOCUMENT_VERSION = "v3.1";
     private static final String DOCUMENT_FILENAME = "Myriad_Technical_Guide.md";
 
     private final RagIngestionService ingestionService;

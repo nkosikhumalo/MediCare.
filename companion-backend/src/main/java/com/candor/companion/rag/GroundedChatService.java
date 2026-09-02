@@ -132,10 +132,11 @@ public class GroundedChatService {
         // the AI physically cannot see address-update or premium rules in this path.
         Optional<String> contextOpt = retrievalService.buildGroundedContext(userQuestion, deceasedFlag);
         String contextBlock = contextOpt.orElse(
-                "No specific policy document context was retrieved for this query. " +
-                "Answer the user's question using your general knowledge about Myriad life insurance products, " +
-                "being clear that you are providing general information rather than details from their specific policy document. " +
-                "Always recommend they contact a consultant for policy-specific details."
+                "No relevant sections were found in the policy document for this query. " +
+                "Do NOT answer from general knowledge or make assumptions. " +
+                "Tell the user clearly that you could not find specific information about their query " +
+                "in the available policy documents, and recommend they contact a MediCare consultant " +
+                "or their financial adviser for authoritative guidance."
         );
         if (contextOpt.isEmpty()) {
             log.info("[GroundedChat] No chunks cleared threshold — proceeding without grounded context.");
