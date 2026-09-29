@@ -28,8 +28,8 @@ function Login() {
     setError("");
     setLoading(true);
     try {
-      const { token, user } = await login(email, password);
-      saveAuth(token, user);
+      const { user } = await login(email, password);
+      saveAuth(user);
       navigate(redirectTo, { replace: true });
     } catch (err) {
       setError(err.message);
