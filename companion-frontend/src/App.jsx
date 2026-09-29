@@ -1,4 +1,5 @@
 import { Routes, Route } from "react-router-dom";
+import CookieConsent from "./components/CookieConsent";
 
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
@@ -10,7 +11,8 @@ import Quote from "./pages/Quote";
 
 function App() {
   return (
-    <Routes>
+    <>
+      <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
@@ -19,6 +21,8 @@ function App() {
       <Route path="/settings" element={<Settings />} />
       <Route path="/quote" element={<Quote />} />
     </Routes>
+      <CookieConsent />
+    </>
   );
 }
 
