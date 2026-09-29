@@ -1,0 +1,28 @@
+const DEFAULT_ORIGINS = [
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+  "capacitor://localhost",
+  "http://localhost",
+];
+
+const allowedOrigins = new Set(
+  (process.env.FRONTEND_ORIGINS || DEFAULT_ORIGINS.join(","))
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+);
+
+module.exports = function csrfProtection(req, res, next) {
+  if (["GET", "HEAD", "OPTIONS"].includes(req.method)) return next();
+
+  const origin = req.get("Origin");
+  if (!origin || !allowedOrigins.has(origin)) {
+    return res.status(403).json({ message: "Request origin is not allowed" });
+  }
+
+  next();
+};
+
+module.exports.allowedOrigins = allowedOrigins;
