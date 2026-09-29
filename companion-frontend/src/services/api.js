@@ -1,5 +1,7 @@
 /** Shared credentialed API client. Authentication is carried only by an HttpOnly cookie. */
-export const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
+const configuredApiBase = import.meta.env.VITE_API_BASE;
+export const API_BASE = (configuredApiBase || (import.meta.env.DEV ? "http://localhost:5000" : ""))
+    .replace(/\/+$/, "");
 
 const COOKIE_CONSENT_KEY = "candor_cookie_consent";
 

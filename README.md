@@ -294,8 +294,10 @@ AI_GATEWAY_VIRTUAL_KEY=optional_gateway_key
 ### <span style="color: #9CA3AF;">Frontend</span> (.env in companion-frontend)
 
 ```
-VITE_API_BASE=http://localhost:5000
+VITE_API_BASE=https://medicare-ze3o.onrender.com
 ```
+
+For local development, set `VITE_API_BASE=http://localhost:5000`. Production builds require `VITE_API_BASE`; the build fails with a clear error if it is missing, so a production bundle cannot silently use localhost.
 
 ---
 
@@ -366,3 +368,27 @@ For issues or questions regarding setup and deployment:
 1. Review the code comments in security-related files
 2. Run the automated tests to verify your setup
 3. Check Windows-specific instructions above
+
+### Render and Vercel connection
+
+The browser calls the Node BFF, which forwards Java requests to the Java service. Set the frontend API base to the Node service URL, not the Java URL.
+
+For each Vercel frontend deployment, set the project root directory to `companion-frontend` and add this environment variable for Production (and Preview too if those deployments should use the live backend):
+
+```text
+VITE_API_BASE=https://medicare-ze3o.onrender.com
+```
+
+Vite embeds this value at build time. After adding or changing it in Vercel, redeploy the frontend. `medicare-ze3o.onrender.com` is the Node BFF; the browser must use Node, not the Java service.
+
+Deploy `companion-backend-node` as a separate Render web service with root directory `companion-backend-node`, build command `npm install`, and start command `npm start`. Set these variables in Render:
+
+```text
+JAVA_SERVICE_URL=https://medicare1-mxqs.onrender.com
+FRONTEND_ORIGINS=https://insuremedical.vercel.app,https://medicare-git-main-nkosis-projects-dc10a720.vercel.app,https://medicare-a388apwr5-nkosis-projects-dc10a720.vercel.app
+NODE_ENV=production
+```
+
+Also set the required database and shared JWT secret variables in Render. The shared JWT secret must be identical in the Node and Java services. Render provides `PORT`. The Node proxy supports HTTPS for the hosted Java service.
+
+If any Vercel deployment uses a different domain, add its exact `https://` origin to the comma-separated `FRONTEND_ORIGINS` value on the Node service.

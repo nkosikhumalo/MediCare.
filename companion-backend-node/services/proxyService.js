@@ -7,6 +7,7 @@
  */
 
 const http = require("http");
+const https = require("https");
 const { URL } = require("url");
 
 function resolveJavaTarget() {
@@ -14,6 +15,7 @@ function resolveJavaTarget() {
         try {
             const u = new URL(process.env.JAVA_SERVICE_URL);
             return {
+                protocol: u.protocol,
                 host: u.hostname,
                 port: parseInt(u.port || (u.protocol === "https:" ? "443" : "80"), 10),
             };
@@ -22,12 +24,14 @@ function resolveJavaTarget() {
         }
     }
     return {
+        protocol: "http:",
         host: process.env.JAVA_SERVICE_HOST || "localhost",
         port: parseInt(process.env.JAVA_SERVICE_PORT || "8080", 10),
     };
 }
 
 const JAVA = resolveJavaTarget();
+const javaRequest = JAVA.protocol === "https:" ? https.request : http.request;
 
 /**
  * Proxy a JSON req → Java at `path`, pipe the response back to `res`.
@@ -55,7 +59,7 @@ function proxyToJava(req, res, path) {
         },
     };
 
-    const proxyReq = http.request(options, (proxyRes) => {
+    const proxyReq = javaRequest(options, (proxyRes) => {
         if (proxyRes.statusCode === 401) {
             console.warn(`[proxy] Java service rejected the forwarded token for ${path}`);
             proxyRes.resume();
@@ -132,7 +136,7 @@ function proxyMultipartToJava(req, res, path, onResponse) {
         },
     };
 
-    const proxyReq = http.request(options, (proxyRes) => {
+    const proxyReq = javaRequest(options, (proxyRes) => {
         let raw = "";
         proxyRes.on("data", (chunk) => { raw += chunk; });
         proxyRes.on("end", () => {
