@@ -3,6 +3,8 @@ package com.candor.companion.domain;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.springframework.stereotype.Component;
 
@@ -18,6 +20,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class ProfileStore {
+
+    private static final Pattern BFF_SUBJECT = Pattern.compile("^user-(policyholder|beneficiary)-([1-9][0-9]*)$");
 
     private final Map<String, PolicyProfile> profilesByPolicyId = new ConcurrentHashMap<>();
 
@@ -56,5 +60,38 @@ public class ProfileStore {
 
     public Optional<PolicyProfile> findByPolicyId(String policyId) {
         return Optional.ofNullable(profilesByPolicyId.get(policyId));
+    }
+
+    /**
+     * Resolve a profile for a verified host/BFF identity token. The host is
+     * the identity authority for registered accounts and signs the deceased
+     * flag from its user record. Local demo profiles remain authoritative.
+     *
+     * Accounts without an attached policy can still use general AI chat;
+     * those accounts get an isolated synthetic scope, not a catalogue link.
+     * The signed subject must be numeric and its role must match the token.
+     */
+    public Optional<PolicyProfile> resolveVerifiedAccount(
+            String policyId, String subject, String requestedRole, boolean deceased) {
+        PolicyProfile knownProfile = policyId == null ? null : profilesByPolicyId.get(policyId);
+        if (knownProfile != null) {
+            return Optional.of(knownProfile);
+        }
+
+        if (subject == null || requestedRole == null) {
+            return Optional.empty();
+        }
+
+        Matcher matcher = BFF_SUBJECT.matcher(subject);
+        if (!matcher.matches() || !matcher.group(1).equalsIgnoreCase(requestedRole)) {
+            return Optional.empty();
+        }
+
+        if (policyId != null && (policyId.isBlank() || policyId.length() > 100)) {
+            return Optional.empty();
+        }
+
+        String resolvedPolicyId = policyId == null ? "ACCOUNT-" + matcher.group(2) : policyId;
+        return Optional.of(new PolicyProfile(resolvedPolicyId, subject, null, deceased));
     }
 }
