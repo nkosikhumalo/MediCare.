@@ -1,51 +1,20 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const http = require("http");
 const User = require("../models/userModel");
 
-/**
- * Fetches a Java-signed token from the Spring Boot service.
- *
- * The Java token is signed with the same secret as the Node token and carries
- * the same claims (sub, role, policyId, deceasedFlag) but is additionally
- * validated against Java's ProfileStore on every request. This means:
- *   - POLICYHOLDER can reach /api/what-if, /api/self-service, /api/rag, /api/claims
- *   - BENEFICIARY is blocked from what-if and self-service at the Java filter level
- *   - If the policy's deceased flag is true, the Java filter demotes the role
- *     to BENEFICIARY regardless of what the token claims
- *
- * Falls back to a Node-only signed token if Java is unreachable (dev convenience).
- */
-function fetchJavaToken(subject, policyId, role) {
-  return new Promise((resolve) => {
-    const body = JSON.stringify({ subject, policyId, requestedRole: role });
-    const options = {
-      hostname: process.env.JAVA_SERVICE_HOST || "localhost",
-      port: parseInt(process.env.JAVA_SERVICE_PORT || "8080", 10),
-      path: "/api/dev/mock-token",
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Content-Length": Buffer.byteLength(body),
-      },
-    };
-    const req = http.request(options, (res) => {
-      let raw = "";
-      res.on("data", (c) => { raw += c; });
-      res.on("end", () => {
-        try {
-          const parsed = JSON.parse(raw);
-          resolve(parsed.token || null);
-        } catch {
-          resolve(null);
-        }
-      });
-    });
-    req.on("error", () => resolve(null));
-    req.setTimeout(5000, () => { req.destroy(); resolve(null); });
-    req.write(body);
-    req.end();
-  });
+const { sessionCookieName, sessionCookieOptions, clearSessionCookie } = require("../middleware/sessionCookie");
+
+function publicUser(user) {
+  return {
+    id: user.id,
+    first_name: user.first_name || "",
+    last_name: user.last_name || "",
+    email: user.email || "",
+    username: user.username || "",
+    role: user.role,
+    policyId: user.policyId || user.policy_id || null,
+    deceasedFlag: user.deceasedFlag === true || user.deceased_flag === true,
+  };
 }
 
 exports.register = async (req, res) => {
@@ -121,67 +90,100 @@ exports.login = async (req, res) => {
       return res.status(500).json({ message: "Auth misconfigured" });
     }
 
-    // Strip "ROLE_" prefix — Java's MockJwtService expects "POLICYHOLDER" / "BENEFICIARY"
     const javaRole = (user.role || "ROLE_POLICYHOLDER").replace(/^ROLE_/, "");
-
-    // Use the user's own stable policy_id — assigned at registration.
     const policyId = user.policy_id;
+    const subject = `user-${javaRole.toLowerCase()}-${user.id}`;
 
-    // subject is a stable identifier for this user — used by Java's
-    // JwtAuthenticationFilter as the CompanionPrincipal subject.
-    //
-    // The 3 demo users map directly to Java's ProfileStore seeds so their
-    // tokens are accepted by the Spring Boot filter end-to-end.
-    // All other users get a dynamic subject and fall back to a Node-signed token.
-    const DEMO_SUBJECT_MAP = {
-      "sipho@candor.co.za": "sipho-policyholder-1001",   // POL-1001 active policyholder
-      "lerato@candor.co.za": "lerato-beneficiary-2002",   // POL-2002 active beneficiary
-      "thandi@candor.co.za": "thandi-beneficiary-3003",   // POL-3003 deceased — empathetic mode
-    };
-    const subject = DEMO_SUBJECT_MAP[user.email] || `user-${javaRole.toLowerCase()}-${user.id}`;
-
-    // Try to get a Java-signed token so it works end-to-end with Spring Boot.
-    // Java's /api/dev/mock-token requires the policyId to exist in ProfileStore.
-    // For users with dynamically generated policyIds (not in the seeded store),
-    // Java returns an error and we fall back to a Node-signed token — which is
-    // still valid for all Node BFF endpoints (/api/chat, /api/auth, etc.).
-    let token = await fetchJavaToken(subject, policyId, javaRole);
-
-    if (!token) {
-      // Node-signed fallback — carries the same claims so downstream
-      // middleware (auth.js, requireRole.js) works identically.
-      token = jwt.sign(
-        {
-          id: user.id,
-          sub: subject,
-          email: user.email,
-          role: javaRole,
-          policyId,
-          deceasedFlag: !!user.deceased_flag,
-          iss: "https://companion.candor.local/mock-idp",
-          aud: "candor-life-companion",
-        },
-        secret,
-        { expiresIn: "1h" }
-      );
-    }
-
-    res.json({
-      message: "Login successful",
-      token,
-      user: {
+    // The BFF signs the same issuer/audience/role claims Java validates. The
+    // JWT is only placed in an HttpOnly cookie and is never returned to JS.
+    const token = jwt.sign(
+      {
         id: user.id,
-        first_name: user.first_name,
-        last_name: user.last_name,
-        email: user.email,
-        username: user.username,
-        role: user.role,          // "ROLE_POLICYHOLDER" or "ROLE_BENEFICIARY"
+        role: javaRole,
         policyId,
-        deceasedFlag: user.deceased_flag,
+        deceasedFlag: !!user.deceased_flag,
+        authTime: Math.floor(Date.now() / 1000),
       },
-    });
+      secret,
+      {
+        algorithm: "HS256",
+        subject,
+        issuer: "https://companion.candor.local/mock-idp",
+        audience: "candor-life-companion",
+        expiresIn: "15m",
+      }
+    );
+
+    res.cookie(sessionCookieName, token, sessionCookieOptions());
+    res.set("Cache-Control", "no-store");
+    res.json({ message: "Login successful", user: publicUser(user) });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server Error" });
   }
+};
+
+
+const MAX_SESSION_AGE_SECONDS = 30 * 24 * 60 * 60;
+
+exports.refresh = (req, res) => {
+  const token = req.cookies?.[sessionCookieName];
+  const secret = process.env.JWT_SECRET || process.env.MOCK_JWT_SIGNING_SECRET;
+  if (!token || !secret) {
+    clearSessionCookie(res);
+    return res.status(401).json({ message: "Session expired. Please log in again." });
+  }
+
+  try {
+    const claims = jwt.verify(token, secret, {
+      algorithms: ["HS256"],
+      issuer: "https://companion.candor.local/mock-idp",
+      audience: "candor-life-companion",
+      ignoreExpiration: true,
+    });
+    const authTime = Number(claims.authTime || claims.iat);
+    const now = Math.floor(Date.now() / 1000);
+    const remainingSeconds = authTime + MAX_SESSION_AGE_SECONDS - now;
+    if (!authTime || remainingSeconds <= 0 || !claims.sub) {
+      clearSessionCookie(res);
+      return res.status(401).json({ message: "Session expired. Please log in again." });
+    }
+
+    const refreshedToken = jwt.sign({
+      id: claims.id,
+      role: claims.role,
+      policyId: claims.policyId || null,
+      deceasedFlag: claims.deceasedFlag === true,
+      authTime,
+    }, secret, {
+      algorithm: "HS256",
+      subject: claims.sub,
+      issuer: "https://companion.candor.local/mock-idp",
+      audience: "candor-life-companion",
+      expiresIn: "15m",
+    });
+
+    res.cookie(sessionCookieName, refreshedToken, sessionCookieOptions(remainingSeconds * 1000));
+    res.set("Cache-Control", "no-store");
+    return res.status(204).end();
+  } catch {
+    clearSessionCookie(res);
+    return res.status(401).json({ message: "Session expired. Please log in again." });
+  }
+};
+
+exports.session = async (req, res) => {
+  try {
+    const user = await User.findUserById(req.user.id);
+    if (!user) return res.status(401).json({ message: "Invalid or expired session" });
+    res.set("Cache-Control", "no-store");
+    res.json({ user: publicUser(user) });
+  } catch {
+    res.status(500).json({ message: "Unable to restore session" });
+  }
+};
+
+exports.logout = (_req, res) => {
+  clearSessionCookie(res);
+  res.status(204).end();
 };
