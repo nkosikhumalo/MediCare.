@@ -18,7 +18,7 @@ function getInitialMessages(state) {
 }
 
 function Chat() {
-    const { token, user } = useAuth();
+    const { token, user, authReady } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
     const userId = user?.id;
@@ -43,9 +43,10 @@ function Chat() {
     });
 
     useEffect(() => {
+        if (!authReady) return;
         if (!token) { navigate("/login"); return; }
         loadConversations();
-    }, [token]);
+    }, [token, authReady]);
 
     // Bootstrap policy flow immediately — messages already set synchronously on mount
     useLayoutEffect(() => {
