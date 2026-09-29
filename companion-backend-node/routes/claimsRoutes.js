@@ -28,6 +28,9 @@ const allowBoth = requireRole.anyRole(); // POLICYHOLDER + BENEFICIARY
 // Document checklist — no file, just JSON
 router.get("/checklist", authenticate, allowBoth, claimsController.getChecklist);
 
+// List the signed-in user's claims
+router.get("/", authenticate, allowBoth, claimsController.listClaims);
+
 // Create FNOL claim ticket
 router.post("/", authenticate, allowBoth, claimsController.createClaim);
 
