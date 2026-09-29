@@ -1,0 +1,118 @@
+.cookie-settings-link {
+  position: fixed;
+  z-index: 40;
+  right: 24px;
+  bottom: 88px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 12px;
+  box-shadow: 0 4px 18px #0002;
+}
+
+.cookie-consent-backdrop {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(12 20 35 / 58%);
+}
+
+.cookie-consent-dialog {
+  width: min(100%, 480px);
+  padding: 28px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 24px 80px #0003;
+}
+
+.cookie-consent-eyebrow {
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.cookie-consent-dialog h2 {
+  margin-bottom: 12px;
+  font-size: 23px;
+}
+
+.cookie-consent-dialog p {
+  line-height: 1.55;
+}
+
+.cookie-consent-note {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.cookie-consent-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.cookie-consent-actions button,
+.cookie-status button {
+  min-height: 40px;
+  padding: 9px 14px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  font-weight: 600;
+}
+
+.cookie-consent-decline {
+  background: transparent;
+  color: var(--text);
+}
+
+.cookie-consent-accept {
+  border-color: var(--red) !important;
+  background: var(--red);
+  color: white;
+}
+
+.cookie-consent-accept:hover {
+  border-color: var(--red-dark) !important;
+  background: var(--red-dark);
+}
+
+.cookie-status {
+  position: fixed;
+  z-index: 40;
+  right: 24px;
+  bottom: 136px;
+  max-width: min(420px, calc(100vw - 32px));
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 4px 18px #0002;
+  font-size: 13px;
+}
+
+.cookie-status button {
+  display: block;
+  margin-top: 8px;
+  background: transparent;
+  color: var(--text);
+}
+
+@media (max-width: 520px) {
+  .cookie-consent-dialog { padding: 22px; }
+  .cookie-consent-actions { flex-direction: column-reverse; }
+  .cookie-consent-actions button { width: 100%; }
+}
