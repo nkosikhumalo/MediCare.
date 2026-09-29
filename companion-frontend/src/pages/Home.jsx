@@ -1,15 +1,39 @@
-﻿import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
 import "../styles/home.css";
+import { apiFetch } from "../services/api";
 
 const ROLE_LABELS = ["Policyholder", "Insured life", "Beneficiary", "Premium payer"];
 
-const ACTIVE_POLICIES = [
-  { id: 1, type: "Medical aid", plan: "Essential Smart", number: "MS-8821043", status: "Active", premium: "R 1 245 / mo", next: "1 Sep 2026", cover: "R 250 000" },
-  { id: 2, type: "Life cover", plan: "LifeGuard Plus", number: "LC-3340187", status: "Active", premium: "R 620 / mo", next: "1 Sep 2026", cover: "R 1 500 000" },
+const DEFAULT_POLICIES = [
+  { id: 1, catalogueId: "medical", type: "Medical aid", plan: "Essential Smart", number: "MS-8821043", status: "Active", premium: "R 1 245 / mo", monthlyAmount: 1245, next: "1 Sep 2026", cover: "R 250 000", isDefault: true },
+  { id: 2, catalogueId: "life", type: "Life cover", plan: "LifeGuard Plus", number: "LC-3340187", status: "Active", premium: "R 620 / mo", monthlyAmount: 620, next: "1 Sep 2026", cover: "R 1 500 000", isDefault: true },
 ];
+
+const CLAIM_MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+const CLAIM_TYPES = [
+  { value: 'LIFE_COVER', label: 'Life cover claim' },
+  { value: 'FUNERAL_COVER', label: 'Funeral cover claim' },
+  { value: 'OTHER_DEATH_BENEFIT', label: 'Other death benefit claim' },
+];
+
+const PASSPORT_COUNTRIES = [
+  'South Africa', 'Angola', 'Botswana', 'Democratic Republic of the Congo', 'Eswatini',
+  'Lesotho', 'Malawi', 'Mozambique', 'Namibia', 'Nigeria', 'Rwanda', 'Tanzania',
+  'Uganda', 'United Kingdom', 'United States', 'Zambia', 'Zimbabwe', 'Australia',
+  'Bangladesh', 'Brazil', 'Canada', 'China', 'France', 'Germany', 'India', 'Japan',
+  'Pakistan', 'Portugal', 'Somalia', 'South Korea', 'Spain', 'United Arab Emirates',
+];
+
+const CLAIMS = [
+  { id: 1, type: "Medical aid", ref: "CLM-20260812", status: "In progress", date: "12 Aug 2026", amount: "R 3 200" },
+  { id: 2, type: "Medical aid", ref: "CLM-20260703", status: "Paid", date: "3 Jul 2026", amount: "R 850" },
+];
+
+const POLICY_LIST_STORAGE_KEY = "candor_added_policy_catalogue_items";
 
 const POLICY_CATALOGUE = [
   { id: "medical", type: "Medical aid", plan: "Essential Smart", description: "Comprehensive day-to-day and hospital cover including GP visits, chronic medication, emergency room care, and specialist referrals.", premium: "From R 645 / mo", benefits: ["GP consultations", "Chronic medication", "Emergency cover", "Specialist referrals"], img: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=600&h=300&fit=crop&auto=format&q=70" },
@@ -20,15 +44,63 @@ const POLICY_CATALOGUE = [
   { id: "disability", type: "Disability cover", plan: "AbilityGuard", description: "Monthly income replacement if you cannot work due to illness or injury. Covers both temporary and permanent disability.", premium: "From R 220 / mo", benefits: ["Income replacement", "Temporary disability", "Permanent disability", "Rehabilitation support"], img: "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=600&h=300&fit=crop&auto=format&q=70" },
 ];
 
+
+const POLICY_MONTHLY_AMOUNTS = {
+  medical: 645,
+  life: 310,
+  car: 480,
+  home: 290,
+  funeral: 95,
+  disability: 220,
+};
+
+function makeSavedPolicy(catalogueId, savedAt, listReference) {
+  const product = POLICY_CATALOGUE.find(item => item.id === catalogueId);
+  if (!product) return null;
+  return {
+    ...product,
+    catalogueId,
+    id: `saved-${catalogueId}`,
+    listReference: listReference || `LIST-${catalogueId.toUpperCase()}`,
+    addedDate: new Date(savedAt || Date.now()).toLocaleDateString(),
+    monthlyAmount: POLICY_MONTHLY_AMOUNTS[catalogueId] || 0,
+    status: "In your list",
+    isDefault: false,
+  };
+}
+
+function readSavedCatalogueEntries() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(POLICY_LIST_STORAGE_KEY) || "[]");
+    if (!Array.isArray(saved)) return [];
+    return saved.map(entry => typeof entry === "string"
+      ? { catalogueId: entry }
+      : entry && typeof entry.catalogueId === "string" ? entry : null
+    ).filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+function readPolicyList() {
+  const defaultIds = new Set(DEFAULT_POLICIES.map(policy => policy.catalogueId));
+  const savedEntries = readSavedCatalogueEntries()
+    .filter(entry => !defaultIds.has(entry.catalogueId))
+    .map(entry => makeSavedPolicy(entry.catalogueId, entry.savedAt, entry.listReference))
+    .filter(Boolean);
+  return [
+    ...DEFAULT_POLICIES.map(policy => ({
+      ...POLICY_CATALOGUE.find(item => item.id === policy.catalogueId),
+      ...policy,
+    })),
+    ...savedEntries,
+  ];
+}
+
 const NOTIFICATIONS = [
   { id: 1, text: "Your renewal quote for Essential Smart is ready.", time: "2h ago", unread: true },
   { id: 2, text: "Premium payment of R1 245 confirmed.", time: "Yesterday", unread: false },
   { id: 3, text: "New benefit: free dental check-up included from Sep 2026.", time: "3d ago", unread: false },
-];
-
-const CLAIMS = [
-  { id: 1, type: "Medical aid", ref: "CLM-20260812", status: "In progress", date: "12 Aug 2026", amount: "R 3 200" },
-  { id: 2, type: "Medical aid", ref: "CLM-20260703", status: "Paid", date: "3 Jul 2026", amount: "R 850" },
 ];
 
 const DOCS = [
@@ -151,33 +223,151 @@ export default function Home() {
   const navigate = useNavigate();
   const location = useLocation();
   const { darkMode, toggleTheme } = useTheme();
-  const { user, token } = useAuth();
+  const { user, token, authReady, clearAuth } = useAuth();
+  const [claims, setClaims] = useState([]);
+  const [claimsLoading, setClaimsLoading] = useState(true);
+  const [claimsError, setClaimsError] = useState("");
+  const [claimFormOpen, setClaimFormOpen] = useState(false);
+  const [claimSubmitting, setClaimSubmitting] = useState(false);
+  const [claimError, setClaimError] = useState("");
+  const [claimNotice, setClaimNotice] = useState("");
+  const [claimForm, setClaimForm] = useState({
+    claim_type: 'LIFE_COVER',
+    claimant_name: "",
+    claimant_relationship: "",
+    deceased_name: "",
+    deceased_document_type: 'ID',
+    deceased_id_number: "",
+    passport_country: "",
+    date_of_death: "",
+    notes: "",
+  });
   const [menuOpen, setMenuOpen] = useState(false);
   const [benefitModal, setBenefitModal] = useState(null);
+  const [policyDetails, setPolicyDetails] = useState(null);
+  const [myPolicies, setMyPolicies] = useState(readPolicyList);
+  const [policyNotice, setPolicyNotice] = useState("");
+  const [addingPolicyId, setAddingPolicyId] = useState(null);
 
   const params = new URLSearchParams(location.search);
   const view = params.get("view") || "home";
 
   useEffect(() => {
-    if (!token) navigate("/login", { state: { from: "/home" }, replace: true });
-  }, [token, navigate]);
+    if (authReady && !token) navigate("/login", { state: { from: "/home" }, replace: true });
+  }, [token, authReady, navigate]);
+
+  useEffect(() => {
+    if (!authReady || !token) return undefined;
+    let cancelled = false;
+    setClaimsLoading(true);
+    setClaimsError("");
+    apiFetch("/api/claims")
+      .then(data => {
+        if (!cancelled) {
+          setClaims(Array.isArray(data.claims) ? data.claims : []);
+          setClaimsError("");
+        }
+      })
+      .catch(error => {
+        if (!cancelled) setClaimsError(error.message || "Could not load your claims.");
+      })
+      .finally(() => {
+        if (!cancelled) setClaimsLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [authReady, token]);
+
+  function openClaimForm() {
+    const name = [user?.first_name, user?.last_name].filter(Boolean).join(" ");
+    setClaimForm(current => ({ ...current, claimant_name: current.claimant_name || name }));
+    setClaimError("");
+    setClaimNotice("");
+    setClaimFormOpen(true);
+  }
+
+  async function submitClaim(event) {
+    event.preventDefault();
+    setClaimSubmitting(true);
+    setClaimError("");
+    try {
+      const data = await apiFetch("/api/claims", {
+        method: "POST",
+        body: JSON.stringify(claimForm),
+      });
+      if (data.claim) setClaims(current => [data.claim, ...current.filter(item => item.id !== data.claim.id)]);
+      setClaimsError("");
+      setClaimNotice(data.message || "Your claim has been submitted.");
+      setClaimForm({ claim_type: 'LIFE_COVER', claimant_name: "", claimant_relationship: "", deceased_name: "", deceased_document_type: 'ID', deceased_id_number: "", passport_country: "", date_of_death: "", notes: "" });
+      setClaimFormOpen(false);
+    } catch (error) {
+      setClaimError(error.message || "We could not submit your claim. Please try again.");
+    } finally {
+      setClaimSubmitting(false);
+    }
+  }
+
 
   function setView(v) {
     if (v === "home") navigate("/home", { replace: false });
     else navigate(`/home?view=${v}`);
   }
 
+  async function handleAddPolicy(product) {
+    setAddingPolicyId(product.id);
+    setPolicyNotice("");
+    try {
+      const savedEntries = readSavedCatalogueEntries();
+      const isAlreadyListed = myPolicies.some(item => item.catalogueId === product.id);
+      if (!isAlreadyListed) {
+        const savedAt = new Date().toISOString();
+        const entry = makeSavedPolicy(product.id, savedAt);
+        localStorage.setItem(POLICY_LIST_STORAGE_KEY, JSON.stringify([
+          ...savedEntries.filter(item => item.catalogueId !== product.id),
+          { catalogueId: product.id, savedAt, listReference: entry?.listReference },
+        ]));
+        if (entry) setMyPolicies(current => [...current, entry]);
+        setPolicyNotice(`${product.plan} was added to My policies.`);
+      } else {
+        setPolicyNotice(`${product.plan} is already in My policies.`);
+      }
+    } catch {
+      setPolicyNotice("Your browser could not save this policy to the list. Check browser storage and try again.");
+    } finally {
+      setAddingPolicyId(null);
+    }
+  }
+
   const displayName = user?.first_name || user?.username || "Member";
   const userRole = user?.role && ROLE_LABELS.includes(user.role) ? user.role : "Policyholder";
   const unreadCount = NOTIFICATIONS.filter(n => n.unread).length;
   const userId = user?.id;
+  const recentClaims = [
+    ...claims.map(claim => {
+      const status = (claim.status || "CLAIM_SUBMITTED_PENDING_REVIEW").replaceAll("_", " ").toLowerCase().replace(/\b\w/g, letter => letter.toUpperCase());
+      const dateValue = claim.created_at || claim.date_of_death;
+      const dateParts = dateValue ? String(dateValue).match(/^(\d{4})-(\d{2})-(\d{2})/) : null;
+      const displayedDate = dateParts
+        ? `${Number(dateParts[3])} ${CLAIM_MONTH_NAMES[Number(dateParts[2]) - 1]} ${dateParts[1]}`
+        : '—';
+      return {
+        key: `claim-${claim.id}`,
+        type: CLAIM_TYPES.find(type => type.value === claim.claim_type)?.label || 'Death benefit claim',
+        ref: `CLM-${String(claim.id).padStart(6, "0")}`,
+        date: displayedDate,
+        amount: "To be assessed",
+        status,
+        paid: ["PAID", "APPROVED"].includes((claim.status || "").toUpperCase()),
+      };
+    }),
+    ...CLAIMS.map(claim => ({ ...claim, key: `default-${claim.id}`, paid: claim.status === "Paid" })),
+  ];
 
   const navProps = {
     onGoHome: () => setView("home"),
     onViewNotif: () => setView("notifications"),
     darkMode, toggleTheme, userId, unreadCount,
     menuOpen, setMenuOpen,
-    onLogout: () => navigate("/"),
+    onLogout: () => { clearAuth(); navigate("/", { replace: true }); },
   };
 
   // ── Notifications ─────────────────────────────────────────────────────────
@@ -217,8 +407,9 @@ export default function Home() {
           <div className="hp-wrap">
             <div className="hp-page-title">
               <h1>Available policies</h1>
-              <p>Browse plans and ask Candor for personalised advice on any product.</p>
+              <p>Save products to your list or ask Candor for guidance. These sample plans are not active insurance cover.</p>
             </div>
+            {policyNotice && <p className="hp-policy-notice" role="status">{policyNotice}</p>}
             <div className="hp-catalogue-grid">
               {POLICY_CATALOGUE.map(p => (
                 <div key={p.id} className="hp-cat-card">
@@ -232,9 +423,18 @@ export default function Home() {
                     <ul className="hp-cat-benefits">
                       {p.benefits.map(b => <li key={b}>{b}</li>)}
                     </ul>
+                    <div className="hp-cat-price">{p.premium}</div>
                     <div className="hp-cat-footer">
-                      <span className="hp-cat-price">{p.premium}</span>
-                      <button className="hp-btn-primary" onClick={() =>
+                      <button
+                        className="hp-btn-primary"
+                        onClick={() => handleAddPolicy(p)}
+                        disabled={addingPolicyId === p.id || myPolicies.some(item => item.catalogueId === p.id)}
+                      >
+                        {myPolicies.some(item => item.catalogueId === p.id)
+                          ? "Added to My policies"
+                          : addingPolicyId === p.id ? "Adding…" : "Add to My policies"}
+                      </button>
+                      <button className="hp-btn-outline" onClick={() =>
                         navigate("/chat", { state: { catalogueCard: p } })
                       }>Ask Candor</button>
                     </div>
@@ -275,17 +475,17 @@ export default function Home() {
           </div>
           <div className="hp-profile-stats">
             <div className="hp-stat">
-              <span className="hp-stat-num">{ACTIVE_POLICIES.length}</span>
-              <span className="hp-stat-label">Active policies</span>
+              <span className="hp-stat-num">{myPolicies.length}</span>
+              <span className="hp-stat-label">Policies and saved plans</span>
             </div>
             <div className="hp-stat-divider" />
             <div className="hp-stat">
-              <span className="hp-stat-num">R 1 865</span>
-              <span className="hp-stat-label">Monthly premium</span>
+              <span className="hp-stat-num">R {myPolicies.filter(policy => policy.isDefault).reduce((total, policy) => total + policy.monthlyAmount, 0).toLocaleString("en-ZA")}</span>
+              <span className="hp-stat-label">Active monthly premium</span>
             </div>
             <div className="hp-stat-divider" />
             <div className="hp-stat">
-              <span className="hp-stat-num">2</span>
+              <span className="hp-stat-num">{recentClaims.length}</span>
               <span className="hp-stat-label">Claims this year</span>
             </div>
           </div>
@@ -321,55 +521,68 @@ export default function Home() {
               <h2>My policies</h2>
               <button className="hp-link-btn" onClick={() => setView("add-policy")}>+ Add policy</button>
             </div>
-            <div className="hp-policy-grid">
-              {ACTIVE_POLICIES.map(p => (
-                <div key={p.id} className="hp-policy-card">
-                  <div className="hp-policy-top">
-                    <div>
-                      <span className="hp-policy-type">{p.type}</span>
-                      <h3 className="hp-policy-name">{p.plan}</h3>
-                    </div>
-                    <span className="hp-status-pill">{p.status}</span>
-                  </div>
-                  <div className="hp-policy-rows">
-                    <div className="hp-policy-row"><span>Policy number</span><span>{p.number}</span></div>
-                    <div className="hp-policy-row"><span>Cover amount</span><span className="hp-policy-val">{p.cover}</span></div>
-                    <div className="hp-policy-row"><span>Monthly premium</span><span className="hp-policy-val">{p.premium}</span></div>
-                    <div className="hp-policy-row"><span>Next payment</span><span>{p.next}</span></div>
-                  </div>
-                  <div className="hp-policy-actions">
-                    <button className="hp-btn-outline" onClick={() =>
-                      navigate("/chat", { state: { policyCard: p } })
-                    }>Ask Candor</button>
-                    <button className="hp-btn-ghost">View details</button>
-                  </div>
-                </div>
-              ))}
-              <div className="hp-policy-card hp-policy-cta" onClick={() => setView("add-policy")}>
-                <div className="hp-cta-plus">+</div>
-                <p>Add a policy</p>
-                <span>Browse available plans</span>
+            {myPolicies.length === 0 ? (
+              <div className="hp-policy-empty">
+                <p>You have not added any products to your policy list yet.</p>
+                <button className="hp-btn-primary" onClick={() => setView("add-policy")}>Browse available policies</button>
               </div>
-            </div>
+            ) : (
+              <div className="hp-policy-grid">
+                {myPolicies.map(p => (
+                  <div key={p.id} className="hp-policy-card">
+                    <div className="hp-policy-top">
+                      <div>
+                        <span className="hp-policy-type">{p.type}</span>
+                        <h3 className="hp-policy-name">{p.plan}</h3>
+                      </div>
+                      <span className={p.isDefault ? "hp-status-pill" : "hp-policy-list-pill"}>{p.status}</span>
+                    </div>
+                    <div className="hp-policy-rows">
+                      {p.number && <div className="hp-policy-row"><span>Policy number</span><span>{p.number}</span></div>}
+                      {p.listReference && <div className="hp-policy-row"><span>List reference</span><span>{p.listReference}</span></div>}
+                      {p.cover && <div className="hp-policy-row"><span>Cover amount</span><span className="hp-policy-val">{p.cover}</span></div>}
+                      <div className="hp-policy-row"><span>{p.isDefault ? "Monthly premium" : "Indicative price"}</span><span className="hp-policy-val">{p.premium}</span></div>
+                      {p.next && <div className="hp-policy-row"><span>Next payment</span><span>{p.next}</span></div>}
+                      {p.addedDate && <div className="hp-policy-row"><span>Added</span><span>{p.addedDate}</span></div>}
+                    </div>
+                    <div className="hp-policy-actions">
+                      <button className="hp-btn-outline" onClick={() =>
+                        navigate("/chat", { state: p.isDefault ? { policyCard: p } : { catalogueCard: p } })
+                      }>Ask Candor</button>
+                      <button className="hp-btn-ghost" onClick={() => setPolicyDetails(p)}>View details</button>
+                    </div>
+                  </div>
+                ))}
+                <button type="button" className="hp-policy-card hp-policy-cta" onClick={() => setView("add-policy")}>
+                  <span className="hp-cta-plus">+</span>
+                  <span className="hp-policy-cta-title">Add a policy</span>
+                  <span>Browse available plans</span>
+                </button>
+              </div>
+            )}
           </section>
 
           <section className="hp-section">
             <div className="hp-section-head">
               <div className="hp-section-bar" />
               <h2>Recent claims</h2>
-              <button className="hp-link-btn" onClick={() => navigate("/chat")}>Submit a claim</button>
+              <button className="hp-link-btn" onClick={openClaimForm}>Submit a claim</button>
             </div>
+            {claimNotice && <p className="hp-claim-notice" role="status">{claimNotice}</p>}
+            {claimsError && <p className="hp-claim-error" role="alert">{claimsError}</p>}
             <div className="hp-claims-table">
               <div className="hp-claims-head">
-                <span>Type</span><span>Reference</span><span>Date</span><span>Amount</span><span>Status</span>
+                <span>Type</span><span>Reference</span><span>Date submitted</span><span>Benefit amount</span><span>Status</span>
               </div>
-              {CLAIMS.map(c => (
-                <div key={c.id} className="hp-claims-row">
-                  <span>{c.type}</span>
-                  <span className="hp-claims-ref">{c.ref}</span>
-                  <span>{c.date}</span>
-                  <span className="hp-claims-amount">{c.amount}</span>
-                  <span className={`hp-claims-status ${c.status === "Paid" ? "paid" : "progress"}`}>{c.status}</span>
+              {claimsLoading && <p className="hp-claims-loading" role="status">Checking for your submitted claims…</p>}
+              {!claimsLoading && !claimsError && recentClaims.length === 0 && <p className="hp-claims-empty">You have not submitted any claims yet.</p>}
+              {recentClaims.map(claim => (
+                <div key={claim.key} className="hp-claims-row">
+                  <span>{claim.type}</span>
+                  <span className="hp-claims-ref">{claim.ref}</span>
+                  <span>{claim.date}</span>
+                  <span className="hp-claims-amount">{claim.amount}</span>
+                  <span className={`hp-claims-status ${claim.paid ? "paid" : "progress"}`}>{claim.status}</span>
                 </div>
               ))}
             </div>
@@ -426,6 +639,103 @@ export default function Home() {
         </svg>
         <span>Ask Candor</span>
       </button>
+
+      {claimFormOpen && (
+        <div className="hp-benefit-modal-backdrop" onClick={() => !claimSubmitting && setClaimFormOpen(false)}>
+          <section className="hp-benefit-modal hp-claim-modal" role="dialog" aria-modal="true" aria-labelledby="claim-form-title" onClick={event => event.stopPropagation()}>
+            <button type="button" className="hp-benefit-modal-close" onClick={() => setClaimFormOpen(false)} aria-label="Close claim form" disabled={claimSubmitting}>×</button>
+            <div className="hp-benefit-modal-body">
+              <span className="hp-policy-type">Death benefit</span>
+              <h3 id="claim-form-title">Submit a claim</h3>
+              <p className="hp-benefit-modal-summary">Tell us about the claimant and the insured person. We’ll register your claim for review and show it in Recent claims.</p>
+              <form className="hp-claim-form" onSubmit={submitClaim}>
+                <label><span className="hp-claim-label-text">Type of claim <span className="hp-claim-required" aria-hidden="true">*</span></span>
+                  <select name="claim_type" required value={claimForm.claim_type} onChange={event => setClaimForm({ ...claimForm, claim_type: event.target.value })}>
+                    {CLAIM_TYPES.map(type => <option key={type.value} value={type.value}>{type.label}</option>)}
+                  </select>
+                </label>
+                <label><span className="hp-claim-label-text">Claimant’s full name <span className="hp-claim-required" aria-hidden="true">*</span></span>
+                  <input name="claimant_name" autoComplete="name" required maxLength={255} value={claimForm.claimant_name} onChange={event => setClaimForm({ ...claimForm, claimant_name: event.target.value })} />
+                </label>
+                <label><span className="hp-claim-label-text">Relationship to the insured person <span className="hp-claim-required" aria-hidden="true">*</span></span>
+                  <select name="claimant_relationship" required value={claimForm.claimant_relationship} onChange={event => setClaimForm({ ...claimForm, claimant_relationship: event.target.value })}>
+                    <option value="">Select relationship</option>
+                    <option>Spouse or partner</option><option>Child</option><option>Parent</option><option>Sibling</option><option>Other family member</option><option>Other</option>
+                  </select>
+                </label>
+                <label><span className="hp-claim-label-text">Insured person’s full name <span className="hp-claim-required" aria-hidden="true">*</span></span>
+                  <input name="deceased_name" required maxLength={255} value={claimForm.deceased_name} onChange={event => setClaimForm({ ...claimForm, deceased_name: event.target.value })} />
+                </label>
+                <label><span className="hp-claim-label-text">Insured person’s identity document <span className="hp-claim-required" aria-hidden="true">*</span></span>
+                  <select name="deceased_document_type" required value={claimForm.deceased_document_type} onChange={event => setClaimForm({ ...claimForm, deceased_document_type: event.target.value, deceased_id_number: '', passport_country: '' })}>
+                    <option value="ID">South African ID</option>
+                    <option value="PASSPORT">Passport</option>
+                  </select>
+                </label>
+                {claimForm.deceased_document_type === 'ID' ? (
+                  <label><span className="hp-claim-label-text">13-digit South African ID number <span className="hp-claim-required" aria-hidden="true">*</span></span>
+                    <input name="deceased_id_number" type="text" inputMode="numeric" required minLength={13} maxLength={13} pattern="[0-9]{13}" title="Enter exactly 13 digits" autoComplete="off" value={claimForm.deceased_id_number} onChange={event => setClaimForm({ ...claimForm, deceased_id_number: event.target.value.replace(/\D/g, '') })} />
+                  </label>
+                ) : (
+                  <>
+                    <label><span className="hp-claim-label-text">Passport number <span className="hp-claim-required" aria-hidden="true">*</span></span>
+                      <input name="deceased_id_number" type="text" required maxLength={50} autoComplete="off" value={claimForm.deceased_id_number} onChange={event => setClaimForm({ ...claimForm, deceased_id_number: event.target.value })} />
+                    </label>
+                    <label><span className="hp-claim-label-text">Passport country of origin <span className="hp-claim-required" aria-hidden="true">*</span></span>
+                      <select name="passport_country" required value={claimForm.passport_country} onChange={event => setClaimForm({ ...claimForm, passport_country: event.target.value })}>
+                        <option value="">Select country</option>
+                        {PASSPORT_COUNTRIES.map(country => <option key={country}>{country}</option>)}
+                      </select>
+                    </label>
+                  </>
+                )}
+                <label><span className="hp-claim-label-text">Date of death <span className="hp-claim-required" aria-hidden="true">*</span></span>
+                  <input name="date_of_death" type="date" required max={new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10)} value={claimForm.date_of_death} onChange={event => setClaimForm({ ...claimForm, date_of_death: event.target.value })} />
+                </label>
+                <label className="hp-claim-notes">Anything else we should know? <span>(optional)</span>
+                  <textarea name="notes" rows="3" maxLength={2000} value={claimForm.notes} onChange={event => setClaimForm({ ...claimForm, notes: event.target.value })} />
+                </label>
+                <div className="hp-claim-docs">
+                  <strong>Documents you’ll need for review</strong>
+                  <ul>
+                    <li>Certified death certificate / DHA-1663 notice of death</li>
+                    <li>Certified ID copies for the insured person and claimant</li>
+                    <li>Recent bank statement for the claimant</li>
+                  </ul>
+                  <span>You can submit this form now; our team may request these documents during review.</span>
+                </div>
+                {claimError && <p className="hp-claim-error" role="alert">{claimError}</p>}
+                <div className="hp-claim-form-actions">
+                  <button type="button" className="hp-btn-ghost" onClick={() => setClaimFormOpen(false)} disabled={claimSubmitting}>Cancel</button>
+                  <button type="submit" className="hp-btn-primary" disabled={claimSubmitting}>{claimSubmitting ? "Submitting…" : "Send claim"}</button>
+                </div>
+              </form>
+            </div>
+          </section>
+        </div>
+      )}
+
+      {policyDetails && (
+        <div className="hp-benefit-modal-backdrop" onClick={() => setPolicyDetails(null)}>
+          <section className="hp-benefit-modal hp-policy-detail-modal" role="dialog" aria-modal="true" aria-labelledby="policy-detail-title" onClick={event => event.stopPropagation()}>
+            <button className="hp-benefit-modal-close" onClick={() => setPolicyDetails(null)} aria-label="Close policy details">×</button>
+            <img src={policyDetails.img} alt="" className="hp-benefit-modal-img" />
+            <div className="hp-benefit-modal-body">
+              <span className="hp-policy-type">{policyDetails.type}</span>
+              <h3 id="policy-detail-title">{policyDetails.plan}</h3>
+              <p className="hp-benefit-modal-summary">{policyDetails.description}</p>
+              <p className="hp-policy-detail-meta">{policyDetails.number ? `Policy number: ${policyDetails.number} · ${policyDetails.status}` : `List reference: ${policyDetails.listReference} · Added ${policyDetails.addedDate}`}</p>
+              {policyDetails.cover && <p className="hp-policy-detail-price">Cover amount: {policyDetails.cover}</p>}
+              <p className="hp-policy-detail-price">{policyDetails.isDefault ? "Monthly premium" : "Indicative price"}: {policyDetails.premium}</p>
+              {policyDetails.next && <p className="hp-policy-detail-meta">Next payment: {policyDetails.next}</p>}
+              <h4>Included features</h4>
+              <ul className="hp-benefit-modal-list">{policyDetails.benefits.map(item => <li key={item}>{item}</li>)}</ul>
+              {!policyDetails.isDefault && <p className="hp-policy-disclaimer">This is a saved catalogue example, not an active insurance policy. Adding it to your list does not purchase or activate cover.</p>}
+              <button className="hp-btn-primary hp-benefit-modal-btn" onClick={() => setPolicyDetails(null)}>Close</button>
+            </div>
+          </section>
+        </div>
+      )}
 
       {benefitModal && (
         <div className="hp-benefit-modal-backdrop" onClick={() => setBenefitModal(null)}>
