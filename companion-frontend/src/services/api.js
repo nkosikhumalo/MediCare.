@@ -1,52 +1,60 @@
-/** Shared API base for the Node.js BFF.
- *  On Android (Capacitor), localhost won't resolve — use the machine's LAN IP.
- *  Set VITE_API_BASE in .env.local to override (e.g. http://10.245.65.75:5000).
- */
-export const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:3001";
+/** Shared credentialed API client. Authentication is carried only by an HttpOnly cookie. */
+export const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5000";
 
-export function getToken() {
-    return sessionStorage.getItem("token");
+const COOKIE_CONSENT_KEY = "candor_cookie_consent";
+
+export function hasCookieConsent() {
+    try { return localStorage.getItem(COOKIE_CONSENT_KEY) === "accepted"; }
+    catch { return false; }
 }
 
-export function authHeaders(extra = {}) {
-    const token = getToken();
-    return {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        ...extra,
-    };
+export function requireCookieConsent() {
+    if (!hasCookieConsent()) throw new Error("Allow the required session cookie in Cookie settings to sign in or use your account.");
 }
 
-/**
- * Fetch wrapper that surfaces API error messages and handles auth failures.
- */
+export async function refreshSession() {
+    requireCookieConsent();
+    try {
+        const response = await fetch(`${API_BASE}/api/auth/refresh`, {
+            method: "POST",
+            credentials: "include",
+        });
+        return response.ok;
+    } catch {
+        return false;
+    }
+}
+
 export async function apiFetch(path, options = {}) {
+    requireCookieConsent();
+    const { _sessionRetry = false, ...fetchOptions } = options;
+    const headers = new Headers(fetchOptions.headers || {});
+    if (fetchOptions.body && !(fetchOptions.body instanceof FormData) && !headers.has("Content-Type")) {
+        headers.set("Content-Type", "application/json");
+    }
+
     const res = await fetch(`${API_BASE}${path}`, {
-        ...options,
-        headers: {
-            ...authHeaders(),
-            ...(options.headers || {}),
-        },
+        ...fetchOptions,
+        credentials: "include",
+        headers,
     });
 
     const data = await res.json().catch(() => ({}));
-
     if (res.status === 401) {
-        sessionStorage.removeItem("token");
-        sessionStorage.removeItem("user");
-        const msg = data.message || "Session expired. Please log in again.";
-        const err = new Error(msg);
+        if (!_sessionRetry && await refreshSession()) {
+            return apiFetch(path, { ...fetchOptions, _sessionRetry: true });
+        }
+        window.dispatchEvent(new Event("auth:expired"));
+        const err = new Error(data.message || "Session expired. Please log in again.");
         err.status = 401;
         err.code = "UNAUTHORIZED";
         throw err;
     }
-
     if (!res.ok) {
         const err = new Error(data.message || data.error || `HTTP ${res.status}`);
         err.status = res.status;
         err.data = data;
         throw err;
     }
-
     return data;
 }
