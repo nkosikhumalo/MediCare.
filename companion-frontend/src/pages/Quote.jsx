@@ -14,12 +14,12 @@ const WAITING_PERIOD_OPTIONS = [
 
 export default function Quote() {
     const navigate = useNavigate();
-    const { token, user } = useAuth();
+    const { token, user, authReady } = useAuth();
 
     // Redirect if not logged in
     useEffect(() => {
-        if (!token) navigate("/login", { replace: true });
-    }, [token, navigate]);
+        if (authReady && !token) navigate("/login", { replace: true });
+    }, [token, authReady, navigate]);
 
     // Redirect if beneficiary — they can't access What-If
     useEffect(() => {
