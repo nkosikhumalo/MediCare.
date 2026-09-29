@@ -1,23 +1,48 @@
-import { API_BASE } from "./api";
+import { API_BASE, refreshSession, requireCookieConsent } from "./api";
 
-export async function login(email, password) {
-  const res = await fetch(`${API_BASE}/api/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
+async function authRequest(path, options = {}) {
+  requireCookieConsent();
+  const res = await fetch(`${API_BASE}${path}`, {
+    ...options,
+    credentials: "include",
+    headers: { "Content-Type": "application/json", ...(options.headers || {}) },
   });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.message || "Login failed");
-  return data; // { token, user }
+  if (!res.ok) {
+    const error = new Error(data.message || "Authentication request failed");
+    error.status = res.status;
+    throw error;
+  }
+  return data;
+}
+
+export async function login(email, password) {
+  return authRequest("/api/auth/login", {
+    method: "POST",
+    body: JSON.stringify({ email, password }),
+  });
 }
 
 export async function register(formData) {
-  const res = await fetch(`${API_BASE}/api/auth/register`, {
+  return authRequest("/api/auth/register", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(formData),
   });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.message || "Registration failed");
-  return data;
+}
+
+export async function getSession() {
+  try {
+    return await authRequest("/api/auth/session");
+  } catch (error) {
+    if (error.status !== 401 || !(await refreshSession())) throw error;
+    return authRequest("/api/auth/session");
+  }
+}
+
+export async function logout() {
+  try {
+    await authRequest("/api/auth/logout", { method: "POST" });
+  } catch {
+    // Local auth state is cleared even when the session has already expired.
+  }
 }
