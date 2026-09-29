@@ -34,6 +34,10 @@ async function findUserByEmail(email) {
   return db.findUserByEmail(email);
 }
 
+async function findUserById(id) {
+  return db.findUserById(id);
+}
+
 async function findUserByUsername(username) {
   return db.findUserByUsername(username);
 }
@@ -41,5 +45,6 @@ async function findUserByUsername(username) {
 module.exports = {
   createUser,
   findUserByEmail,
+  findUserById,
   findUserByUsername,
 };
