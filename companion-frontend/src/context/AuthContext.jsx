@@ -1,69 +1,74 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
+import { getSession, logout } from "../services/authService";
 
 const AuthContext = createContext(null);
 
-function isTokenExpired(token) {
-    if (!token) return true;
-    try {
-        const payload = token.split(".")[1];
-        const padded = payload + "=".repeat((4 - (payload.length % 4)) % 4);
-        const claims = JSON.parse(atob(padded.replace(/-/g, "+").replace(/_/g, "/")));
-        if (!claims.exp) return false;
-        return claims.exp * 1000 <= Date.now() + 30_000;
-    } catch {
-        return true;
-    }
-}
-
 export function AuthProvider({ children }) {
-    const [token, setToken] = useState(() => {
-        const t = sessionStorage.getItem("token");
-        if (t && isTokenExpired(t)) {
-            sessionStorage.removeItem("token");
-            sessionStorage.removeItem("user");
-            return null;
-        }
-        return t;
-    });
+    const [token, setToken] = useState(false); // Boolean compatibility flag; JWT itself stays HttpOnly.
+    const [user, setUser] = useState(null);
+    const [authReady, setAuthReady] = useState(false);
 
-    const [user, setUser] = useState(() => {
-        try {
-            if (!sessionStorage.getItem("token") || isTokenExpired(sessionStorage.getItem("token"))) {
-                return null;
-            }
-            const u = sessionStorage.getItem("user");
-            return u ? JSON.parse(u) : null;
-        } catch {
-            sessionStorage.removeItem("user");
-            return null;
-        }
-    });
-
-    // Periodically drop expired sessions
     useEffect(() => {
-        if (!token) return;
-        const id = setInterval(() => {
-            if (isTokenExpired(token)) clearAuth();
-        }, 60_000);
-        return () => clearInterval(id);
-    }, [token]);
+        // Remove legacy browser-readable credentials left by earlier builds.
+        sessionStorage.removeItem("token");
+        sessionStorage.removeItem("user");
 
-    function saveAuth(nextToken, nextUser) {
-        sessionStorage.setItem("token", nextToken);
-        sessionStorage.setItem("user", JSON.stringify(nextUser));
-        setToken(nextToken);
+        let active = true;
+        getSession()
+            .then(({ user: sessionUser }) => {
+                if (!active) return;
+                setUser(sessionUser);
+                setToken(true);
+            })
+            .catch(() => {
+                if (!active) return;
+                setUser(null);
+                setToken(false);
+            })
+            .finally(() => { if (active) setAuthReady(true); });
+
+        const onExpired = () => {
+            setUser(null);
+            setToken(false);
+            setAuthReady(true);
+        };
+        const onConsentChanged = (event) => {
+            if (event.detail !== "accepted") {
+                setUser(null);
+                setToken(false);
+                setAuthReady(true);
+                return;
+            }
+            setAuthReady(false);
+            getSession()
+                .then(({ user: sessionUser }) => { if (active) { setUser(sessionUser); setToken(true); } })
+                .catch(() => { if (active) { setUser(null); setToken(false); } })
+                .finally(() => { if (active) setAuthReady(true); });
+        };
+        window.addEventListener("auth:expired", onExpired);
+        window.addEventListener("cookie-consent-changed", onConsentChanged);
+        return () => {
+            active = false;
+            window.removeEventListener("auth:expired", onExpired);
+            window.removeEventListener("cookie-consent-changed", onConsentChanged);
+        };
+    }, []);
+
+    function saveAuth(nextUser) {
         setUser(nextUser);
+        setToken(true);
+        setAuthReady(true);
     }
 
     function clearAuth() {
-        sessionStorage.removeItem("token");
-        sessionStorage.removeItem("user");
-        setToken(null);
         setUser(null);
+        setToken(false);
+        setAuthReady(true);
+        void logout();
     }
 
     return (
-        <AuthContext.Provider value={{ token, user, saveAuth, clearAuth, isAuthenticated: !!token }}>
+        <AuthContext.Provider value={{ token, user, authReady, saveAuth, clearAuth, isAuthenticated: token }}>
             {children}
         </AuthContext.Provider>
     );
