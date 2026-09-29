@@ -51,11 +51,19 @@ function proxyToJava(req, res, path) {
         headers: {
             "Content-Type": "application/json",
             "Content-Length": Buffer.byteLength(forwardBody),
-            Authorization: req.headers["authorization"] || "",
+            Authorization: req.authToken ? `Bearer ${req.authToken}` : "",
         },
     };
 
     const proxyReq = http.request(options, (proxyRes) => {
+        if (proxyRes.statusCode === 401) {
+            console.warn(`[proxy] Java service rejected the forwarded token for ${path}`);
+            proxyRes.resume();
+            return res.status(502).json({
+                message: "The AI service could not validate the session token. Your Candor sign-in is still active.",
+                code: "UPSTREAM_AUTH_ERROR",
+            });
+        }
         res.status(proxyRes.statusCode);
         // Ensure JSON responses are readable by the browser CORS stack
         const contentType = proxyRes.headers["content-type"];
@@ -120,7 +128,7 @@ function proxyMultipartToJava(req, res, path, onResponse) {
         headers: {
             "Content-Type": `multipart/form-data; boundary=${boundary}`,
             "Content-Length": body.length,
-            Authorization: req.headers["authorization"] || "",
+            Authorization: req.authToken ? `Bearer ${req.authToken}` : "",
         },
     };
 
