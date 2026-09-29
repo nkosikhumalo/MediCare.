@@ -29,11 +29,10 @@ import java.util.Optional;
  * own role claim — the effective role is recomputed here from the live
  * {@link ProfileStore} deceased flag on every call.
  * <p>
- * On any failure (missing header, bad signature, wrong issuer/audience,
- * expired token, unknown policy id) the filter does NOT set an
- * authentication and lets the request continue unauthenticated; downstream
- * Spring Security endpoint rules then reject it with 401/403. We deliberately
- * never "fail open".
+ * Invalid tokens and identities that are neither known local profiles nor
+ * well-formed host/BFF account subjects remain unauthenticated; downstream
+ * Spring Security endpoint rules reject them with 401/403. A verified host
+ * account may use an account-scoped chat identity even without a policy id.
  */
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -69,12 +68,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             CompanionRole requestedRole = MockJwtService.roleFromClaims(claims);
             boolean tokenDeceasedFlag = MockJwtService.deceasedFlagFromClaims(claims);
 
-            Optional<PolicyProfile> profile = profileStore.findByPolicyId(policyId);
+            Optional<PolicyProfile> profile = profileStore.resolveVerifiedAccount(
+                    policyId, subject, requestedRole.name(), tokenDeceasedFlag);
             if (profile.isEmpty()) {
-                log.warn("auth.reject reason=unknown_policy subject={} policyId={}", subject, policyId);
+                log.warn("auth.reject reason=unknown_policy_or_account subject={} policyId={}", subject, policyId);
                 filterChain.doFilter(request, response);
                 return;
             }
+
+            String resolvedPolicyId = profile.get().policyId();
 
             // Server-of-record deceased flag wins. If the token disagrees with
             // the profile store, log it loudly — that mismatch is either a
@@ -82,13 +84,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             boolean effectiveDeceasedFlag = profile.get().deceased();
             if (effectiveDeceasedFlag != tokenDeceasedFlag) {
                 log.warn("auth.flag_mismatch subject={} policyId={} tokenFlag={} serverFlag={}",
-                        subject, policyId, tokenDeceasedFlag, effectiveDeceasedFlag);
+                        subject, resolvedPolicyId, tokenDeceasedFlag, effectiveDeceasedFlag);
             }
 
             CompanionRole effectiveRole = deriveEffectiveRole(requestedRole, effectiveDeceasedFlag);
 
             CompanionPrincipal principal = new CompanionPrincipal(
-                    subject, policyId, requestedRole, effectiveRole, effectiveDeceasedFlag);
+                    subject, resolvedPolicyId, requestedRole, effectiveRole, effectiveDeceasedFlag);
 
             List<GrantedAuthority> authorities =
                     List.of(new SimpleGrantedAuthority("ROLE_" + effectiveRole.name()));
@@ -97,7 +99,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
             log.info("auth.accept subject={} policyId={} requestedRole={} effectiveRole={}",
-                    subject, policyId, requestedRole, effectiveRole);
+                    subject, resolvedPolicyId, requestedRole, effectiveRole);
 
         } catch (JwtException | IllegalArgumentException e) {
             log.warn("auth.reject reason=invalid_token detail={}", e.getMessage());
