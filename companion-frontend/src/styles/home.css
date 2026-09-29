@@ -584,3 +584,109 @@ body.dark .user-avatar-svg .avatar-figure {
   align-items: center;
   justify-content: center;
 }
+
+/* User policy list and saved catalogue product states */
+.hp-policy-list-pill {
+  flex-shrink: 0;
+  padding: 4px 9px;
+  border: 1px solid #dbeafe;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1e3a8a;
+  font-size: 10px;
+  font-weight: 700;
+}
+body.dark .hp-policy-list-pill { border-color: #263b69; background: #17243f; color: #bfdbfe; }
+
+.hp-policy-empty {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 22px;
+  border: 1px dashed #d1d5db;
+  border-radius: 14px;
+  background: #fff;
+  color: #6b7280;
+  font-size: 14px;
+}
+body.dark .hp-policy-empty { border-color: #2a3147; background: #161b27; color: #aab2c3; }
+.hp-policy-empty p { margin: 0; }
+
+.hp-policy-notice {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+  background: #f0fdf4;
+  color: #166534;
+  font-size: 13px;
+}
+.hp-policy-notice-error { border-color: #fecaca; background: #fef2f2; color: #991b1b; }
+body.dark .hp-policy-notice { border-color: #14532d; background: #10251a; color: #bbf7d0; }
+body.dark .hp-policy-notice-error { border-color: #7f1d1d; background: #301719; color: #fecaca; }
+
+.hp-policy-cta {
+  width: 100%;
+  color: #6b7280;
+  font: inherit;
+}
+.hp-policy-cta-title { color: #374151; font-size: 14px; font-weight: 700; }
+body.dark .hp-policy-cta-title { color: #e8eaf0; }
+
+.hp-cat-footer { justify-content: flex-start; flex-wrap: wrap; }
+.hp-cat-footer button { min-height: 38px; }
+.hp-cat-footer button:disabled { cursor: default; opacity: .65; }
+
+.hp-policy-detail-modal { max-height: min(90vh, 760px); overflow-y: auto; }
+.hp-policy-detail-modal h4 { margin: 4px 0 0; font-size: 14px; }
+.hp-policy-detail-price { margin: -6px 0 14px; font-size: 14px; font-weight: 700; color: #111827; }
+body.dark .hp-policy-detail-price { color: #e8eaf0; }
+.hp-policy-disclaimer { margin: 0 0 18px; padding: 11px 12px; border-radius: 8px; background: #f3f4f6; color: #4b5563; font-size: 12px; line-height: 1.5; }
+body.dark .hp-policy-disclaimer { background: #1e2535; color: #c5cad6; }
+
+.hp-policy-detail-meta { margin: -8px 0 14px; color: #6b7280; font-size: 12px; }
+body.dark .hp-policy-detail-meta { color: #aab2c3; }
+
+
+/* ── Claim submission ── */
+.hp-claim-notice, .hp-claims-loading, .hp-claims-empty {
+  margin: 0 0 12px; padding: 12px 15px; border-radius: 9px;
+  background: #eff6ff; color: #1e3a8a; font-size: 13px;
+}
+.hp-claim-error { margin: 0 0 12px; color: #b42318; font-size: 13px; }
+body.dark .hp-claim-notice, body.dark .hp-claims-loading, body.dark .hp-claims-empty { background: #17243d; color: #bfdbfe; }
+body.dark .hp-claim-error { color: #fca5a5; }
+.hp-claim-modal { max-width: 640px; max-height: calc(100vh - 32px); overflow-y: auto; }
+.hp-claim-modal .hp-benefit-modal-body { padding-top: 28px; }
+.hp-claim-form { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.hp-claim-form label { display: flex; flex-direction: column; gap: 6px; color: #374151; font-size: 13px; font-weight: 600; }
+body.dark .hp-claim-form label { color: #e8eaf0; }
+.hp-claim-label-text { display: inline-flex; align-items: baseline; gap: 3px; }
+.hp-claim-required { color: #E4032B; }
+.hp-claim-form input, .hp-claim-form select, .hp-claim-form textarea {
+  width: 100%; min-height: 42px; padding: 10px 12px; border: 1px solid #D1D5DB;
+  border-radius: 8px; background: #fff; color: #111827; font: inherit; font-weight: 400;
+}
+.hp-claim-form textarea { resize: vertical; }
+body.dark .hp-claim-form input, body.dark .hp-claim-form select, body.dark .hp-claim-form textarea {
+  background: #0e1117; border-color: #3a435a; color: #e8eaf0;
+}
+.hp-claim-form input:focus, .hp-claim-form select:focus, .hp-claim-form textarea:focus { outline: 2px solid #0F1E4A; outline-offset: 1px; }
+.hp-claim-notes, .hp-claim-docs, .hp-claim-form-actions, .hp-claim-form > .hp-claim-error { grid-column: 1 / -1; }
+.hp-claim-notes > span { font-weight: 400; color: #6B7280 !important; }
+.hp-claim-docs { padding: 13px 15px; background: #F9FAFB; border-radius: 9px; color: #374151; font-size: 12px; line-height: 1.55; }
+body.dark .hp-claim-docs { background: #1e2535; color: #c5cad6; }
+.hp-claim-docs ul { margin: 7px 0; padding-left: 18px; }
+.hp-claim-docs > span { color: #6B7280; }
+.hp-claim-form-actions { display: flex; justify-content: flex-end; gap: 10px; }
+.hp-claim-form-actions button { min-width: 110px; }
+.hp-claims-loading { margin: 0; border-radius: 0; }
+@media (max-width: 600px) {
+  .hp-claim-modal { max-height: calc(100vh - 20px); }
+  .hp-claim-form { grid-template-columns: 1fr; }
+  .hp-claim-notes, .hp-claim-docs, .hp-claim-form-actions, .hp-claim-form > .hp-claim-error { grid-column: auto; }
+  .hp-claim-form-actions { flex-direction: column-reverse; }
+  .hp-claim-form-actions button { width: 100%; }
+}
