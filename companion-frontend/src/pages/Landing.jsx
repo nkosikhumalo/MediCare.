@@ -16,15 +16,19 @@ const NAV_ITEMS = [
 const SECTIONS = {
   "medical-aid": {
     label: "Medical aid", eyebrow: "Healthcare cover",
-    hero: "Quality healthcare shouldn't be a luxury.",
-    heroSub: "Our medical aid plans cover everything from day-to-day GP visits to major surgery — at a price that works for your life.",
+    hero: "Understand your healthcare cover.",
+    heroSub: "Explore a sample medical aid experience: learn how everyday care, hospital treatment, and plan limits can fit together.",
+    demoNote: "Demo information: these sample plan names, prices, and benefits are fictional and do not represent an available medical aid scheme.",
+    overviewTitle: "What is medical aid?",
+    overview: "Medical aid is a healthcare funding arrangement that helps members pay for eligible medical care. Depending on the scheme and option, cover may include hospital treatment, visits to healthcare professionals, prescribed medicine, or ongoing care for certain conditions. Rules, provider networks, limits, and co-payments vary by plan.",
+    howItWorks: ["Hospital cover can help with eligible admission and in-hospital treatment.", "Day-to-day benefits may contribute toward GP visits, dentistry, or medicine, subject to plan rules.", "Some schemes use designated provider networks, and using providers outside the network can affect what is paid."],
     heroImg: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=1200&h=500&fit=crop&auto=format&q=80",
     plans: [
       { name: "Essential Smart", price: "From R 645 / mo", desc: "Day-to-day cover including GP visits, chronic medication, and emergency care.", features: ["Unlimited GP visits", "Chronic disease management", "Emergency room cover", "Optical & dental basics"] },
       { name: "Hospital Plus", price: "From R 1 050 / mo", desc: "Full hospital cover with specialist access and extended day-to-day benefits.", features: ["Private hospital access", "Specialist consultations", "Maternity benefits", "MRI & CT scans"] },
       { name: "Comprehensive", price: "From R 1 890 / mo", desc: "Our most complete plan — unlimited cover for families who want full peace of mind.", features: ["Unlimited specialist visits", "Full dental & orthodontics", "Mental health support", "International cover"] },
     ],
-    facts: ["Over 1.2 million medical aid members", "94% of claims paid within 48 hours", "4 000+ network hospitals & clinics"],
+    facts: ["Sample plan comparisons", "Illustrative benefits", "Review limits and exclusions"],
     img2: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=700&h=450&fit=crop&auto=format&q=75",
   },
   "car-home": {
@@ -42,15 +46,19 @@ const SECTIONS = {
   },
   "life-insurance": {
     label: "Life insurance", eyebrow: "Life & disability cover",
-    hero: "Give your family certainty, whatever happens.",
-    heroSub: "Life cover that pays out when your family needs it most — with rewards for staying healthy.",
-    heroImg: "https://images.unsplash.com/photo-1529518152792-d08317b26e22?w=1200&h=500&fit=crop&auto=format&q=80",
+    hero: "Explore how life cover can support your family.",
+    heroSub: "See a sample overview of life insurance, beneficiary choices, and optional protection for illness or disability.",
+    demoNote: "Demo information: these sample plan names, prices, and benefits are fictional and do not represent an available insurance policy.",
+    overviewTitle: "What is life insurance?",
+    overview: "Life insurance is a contract that may pay a benefit to nominated beneficiaries if the insured person dies while the policy is active, subject to its terms and exclusions. Some policies offer optional benefits for events such as disability or specified illnesses. The amount of cover, premium, eligibility, waiting periods, and claim requirements depend on the policy.",
+    howItWorks: ["Choose a cover amount with your family's needs and existing support in mind.", "Keep beneficiary details current and make sure loved ones know where policy documents are held.", "Read the policy wording for exclusions, waiting periods, premium changes, and claim requirements."],
+    heroImg: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&h=500&fit=crop&auto=format&q=80",
     plans: [
       { name: "LifeGuard Essential", price: "From R 210 / mo", desc: "Basic life cover with a guaranteed payout to your nominated beneficiaries.", features: ["Death benefit", "Accidental death top-up", "Beneficiary nomination", "No waiting period"] },
       { name: "LifeGuard Plus", price: "From R 310 / mo", desc: "Inflation-linked life cover with terminal illness and disability accelerators.", features: ["Inflation-linked cover", "Terminal illness payout", "Disability accelerator", "Cashback after 5 years"] },
       { name: "AbilityGuard", price: "From R 220 / mo", desc: "Income protection if you can't work due to illness or injury.", features: ["Monthly income replacement", "Temporary & permanent cover", "Own-occupation definition", "Rehabilitation benefit"] },
     ],
-    facts: ["R6.5 billion paid in claims last year", "98% of valid claims paid", "Average payout within 5 working days"],
+    facts: ["Sample cover options", "Illustrative benefits", "Review exclusions and terms"],
     img2: "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=700&h=450&fit=crop&auto=format&q=75",
   },
   "investments": {
@@ -214,9 +222,23 @@ function SectionPage({ sectionKey, onNav, onLogin, onQuote, onAdvice }) {
         </div>
       </div>
 
+      {data.overview && (
+        <section className="lp-section-plans" aria-label={`${data.label} information`}>
+          <div className="lp-wrap">
+            <p className="lp-eyebrow" style={{ textAlign: "center", marginBottom: 8 }}>Learn the basics</p>
+            <h2 className="lp-section-plans-h2">{data.overviewTitle}</h2>
+            <p style={{ maxWidth: 820, margin: "0 auto 24px", lineHeight: 1.75, color: "#475569" }}>{data.overview}</p>
+            <ul style={{ maxWidth: 820, margin: "0 auto", lineHeight: 1.8, color: "#475569" }}>
+              {data.howItWorks.map(item => <li key={item}>{item}</li>)}
+            </ul>
+            <p role="note" style={{ maxWidth: 820, margin: "24px auto 0", padding: 16, borderRadius: 12, background: "#fff7ed", color: "#9a3412", lineHeight: 1.6 }}>{data.demoNote}</p>
+          </div>
+        </section>
+      )}
+
       <section className="lp-section-plans">
         <div className="lp-wrap">
-          <p className="lp-eyebrow" style={{ textAlign: "center", marginBottom: 8 }}>Our plans</p>
+          <p className="lp-eyebrow" style={{ textAlign: "center", marginBottom: 8 }}>{data.demoNote ? "Sample plans" : "Our plans"}</p>
           <h2 className="lp-section-plans-h2">Choose what fits your life</h2>
           <div className="lp-plans-grid">
             {data.plans.map((plan, i) => (
@@ -331,7 +353,7 @@ function Landing() {
 
           <div className="lp-quote-cards" id="quote">
             <div className="lp-qcard">
-              <div className="lp-art"><img src="https://images.unsplash.com/photo-1609220136736-443140cffec6?w=500&h=400&fit=crop&auto=format&q=70" alt="Family outdoors" /></div>
+              <div className="lp-art"><img src="https://images.unsplash.com/photo-1538108149393-fbbd81895907?w=500&h=400&fit=crop&auto=format&q=70" alt="Hospital room" /></div>
               <div className="lp-body">
                 <span className="lp-cat">Medical aid</span>
                 <h3>Save up to 30% on your monthly plan</h3>
@@ -340,7 +362,7 @@ function Landing() {
               </div>
             </div>
             <div className="lp-qcard">
-              <div className="lp-art"><img src="https://images.unsplash.com/photo-1529518152792-d08317b26e22?w=500&h=400&fit=crop&auto=format&q=70" alt="Family" /></div>
+              <div className="lp-art"><img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=500&h=400&fit=crop&auto=format&q=70" alt="Home exterior" /></div>
               <div className="lp-body">
                 <span className="lp-cat">Life insurance</span>
                 <h3>A discounted quote in three minutes</h3>
