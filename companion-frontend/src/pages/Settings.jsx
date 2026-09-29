@@ -81,14 +81,10 @@ export default function Settings() {
             formData.append("postalCode", address.postalCode || "");
             if (document_) formData.append("document", document_);
 
-            const token = sessionStorage.getItem("token");
-            const res = await fetch(`${import.meta.env.VITE_API_BASE || "http://localhost:5000"}/api/self-service/address`, {
+            const data = await apiFetch("/api/self-service/address", {
                 method: "POST",
-                headers: token ? { Authorization: `Bearer ${token}` } : {},
                 body: formData,
             });
-            const data = await res.json().catch(() => ({}));
-            if (!res.ok) throw new Error(data.message || `HTTP ${res.status}`);
             setAddrResult(data);
             setDocument_(null);
         } catch (err) {
