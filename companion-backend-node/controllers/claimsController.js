@@ -50,21 +50,44 @@ exports.getChecklist = (_req, res) => {
 
 exports.createClaim = async (req, res) => {
     try {
-        const { claimant_name, deceased_name, deceased_id_number, date_of_death, notes } = req.body;
+        const { claim_type, claimant_name, claimant_relationship, deceased_name, deceased_document_type, deceased_id_number, passport_country, date_of_death, notes } = req.body;
         const userId = req.user?.id;
         const policyId = req.user?.policyId || "unknown";
-
-        if (!claimant_name) {
-            return res.status(400).json({ message: "claimant_name is required." });
+        const allowedClaimTypes = new Set(['LIFE_COVER', 'FUNERAL_COVER', 'OTHER_DEATH_BENEFIT']);
+        if (!allowedClaimTypes.has(claim_type)) {
+            return res.status(400).json({ message: 'Select a valid claim type.' });
+        }
+        if (!['ID', 'PASSPORT'].includes(deceased_document_type)) {
+            return res.status(400).json({ message: 'Select ID or passport as the identity document.' });
+        }
+        if (deceased_document_type === 'ID' && !/^\d{13}$/.test(String(deceased_id_number || '').trim())) {
+            return res.status(400).json({ message: 'South African ID numbers must contain exactly 13 digits.' });
+        }
+        if (deceased_document_type === 'PASSPORT' && !String(passport_country || '').trim()) {
+            return res.status(400).json({ message: 'Select the passport country of origin.' });
+        }
+        const requiredFields = { claimant_name, claimant_relationship, deceased_name, deceased_id_number, date_of_death };
+        const missingField = Object.entries(requiredFields).find(([, value]) => !String(value || "").trim());
+        if (missingField) {
+            return res.status(400).json({ message: `${missingField[0]} is required.` });
+        }
+        const parsedDeathDate = new Date(`${date_of_death}T00:00:00Z`);
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(date_of_death)
+            || Number.isNaN(parsedDeathDate.getTime())
+            || parsedDeathDate.toISOString().slice(0, 10) !== date_of_death) {
+            return res.status(400).json({ message: "date_of_death must be a valid date." });
+        }
+        if (date_of_death > new Date().toISOString().slice(0, 10)) {
+            return res.status(400).json({ message: "date_of_death cannot be in the future." });
         }
 
-        const result = await db.query(
+        const result = await db.pool.query(
             `INSERT INTO claims
-               (user_id, policy_id, claimant_name, deceased_name, deceased_id_number, date_of_death, notes)
-             VALUES ($1,$2,$3,$4,$5,$6,$7)
+               (user_id, policy_id, claim_type, claimant_name, claimant_relationship, deceased_name, deceased_document_type, deceased_id_number, passport_country, date_of_death, notes)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
              RETURNING *`,
-            [userId, policyId, claimant_name, deceased_name || null,
-                deceased_id_number || null, date_of_death || null, notes || null]
+            [userId, policyId, claim_type, claimant_name.trim(), claimant_relationship.trim(), deceased_name.trim(),
+                deceased_document_type, deceased_id_number.trim(), deceased_document_type === 'PASSPORT' ? passport_country.trim() : null, date_of_death, notes || null]
         );
 
         const claim = result.rows[0];
@@ -81,6 +104,24 @@ exports.createClaim = async (req, res) => {
     }
 };
 
+// ─── List the signed-in user's recent claims ──────────────────────────────────
+
+exports.listClaims = async (req, res) => {
+    try {
+        const result = await db.pool.query(
+            `SELECT id, policy_id, claim_type, claimant_name, claimant_relationship, deceased_name,
+                    deceased_document_type, deceased_id_number, passport_country, date_of_death, status, documents_validated,
+                    created_at, updated_at
+             FROM claims WHERE user_id = $1 ORDER BY created_at DESC LIMIT 25`,
+            [req.user?.id]
+        );
+        res.json({ claims: result.rows });
+    } catch (err) {
+        console.error("[Claims] listClaims error:", err);
+        res.status(500).json({ message: "Failed to retrieve claims." });
+    }
+};
+
 // ─── Get claim status ─────────────────────────────────────────────────────────
 
 exports.getClaim = async (req, res) => {
@@ -88,7 +129,7 @@ exports.getClaim = async (req, res) => {
         const { claimId } = req.params;
         const userId = req.user?.id;
 
-        const result = await db.query(
+        const result = await db.pool.query(
             `SELECT c.*, 
                     json_agg(cd ORDER BY cd.created_at) FILTER (WHERE cd.id IS NOT NULL) AS documents
              FROM claims c
@@ -120,7 +161,7 @@ exports.uploadDocument = async (req, res) => {
 
     // Verify the claim belongs to this user before accepting the upload
     try {
-        const check = await db.query(
+        const check = await db.pool.query(
             "SELECT id FROM claims WHERE id = $1 AND user_id = $2",
             [claimId, userId]
         );
@@ -143,7 +184,7 @@ exports.uploadDocument = async (req, res) => {
             const notes = feedback || (qualityIssue ? "Quality issue: " + qualityIssue : null);
 
             // Persist the document record
-            const inserted = await db.query(
+            const inserted = await db.pool.query(
                 `INSERT INTO claim_documents
                    (claim_id, doc_type, file_name, mime_type, is_valid, validation_notes)
                  VALUES ($1,$2,$3,$4,$5,$6)
@@ -152,14 +193,14 @@ exports.uploadDocument = async (req, res) => {
             );
 
             // If all required docs for this claim are valid, mark it as docs-collected
-            const docsResult = await db.query(
+            const docsResult = await db.pool.query(
                 `SELECT COUNT(*) FILTER (WHERE is_valid = true) AS valid_count
                  FROM claim_documents WHERE claim_id = $1`,
                 [claimId]
             );
             const validCount = parseInt(docsResult.rows[0].valid_count, 10);
             if (validCount >= 4) {
-                await db.query(
+                await db.pool.query(
                     `UPDATE claims SET documents_validated = true, updated_at = NOW() WHERE id = $1`,
                     [claimId]
                 );
