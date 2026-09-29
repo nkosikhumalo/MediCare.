@@ -15,7 +15,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class JwtProperties {
 
     /** HMAC signing secret for the mock end-user JWT. Local/dev only — replace with RS256 + real key management for the finals. */
-    private String signingSecret = "dev-only-mock-signing-secret-change-me-please-32chars";
+    private String signingSecret = "";
 
     /** Expected issuer claim. */
     private String issuer = "https://companion.candor.local/mock-idp";
