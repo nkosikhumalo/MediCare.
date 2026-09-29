@@ -27,7 +27,7 @@ Host App (Next.js 3000)
     ↓
 Companion Widget (iframe)
     ↓
-Node.js BFF (3001)
+Node.js BFF (5000)
     ↓
 Java Microservice (8081)
     ↓
@@ -36,8 +36,14 @@ AI Gateway
 
 **Authentication Model:**
 
-- **End-User:** Mock JWT with role-based access (POLICYHOLDER / BENEFICIARY)
+- **End-User:** 15-minute JWT in an `HttpOnly` cookie, silently refreshed while the 30-day session remains valid; JavaScript never receives the token.
 - **Machine-to-Machine:** OAuth2 client-credentials for AI Gateway
+
+### Session and secret configuration
+
+Set the same random secret of at least 32 bytes as `JWT_SECRET` for both the Node BFF and Java service. Do not use a value committed to source control. For local development, allow the frontend origin with `FRONTEND_ORIGINS=http://localhost:5173` (or `http://localhost:3000` if Vite is configured for port 3000). Production requires HTTPS and the exact frontend origin in `FRONTEND_ORIGINS`; production cookies are Secure, use the `__Host-` prefix, and set `SameSite=None` for the embedded widget. Keep the host app origin in the allow-list; browsers may still block third-party cookies, so same-site hosting is preferred.
+
+The BFF validates `Origin` on state-changing requests and uses credentialed CORS only for configured frontend origins. The browser stores no JWT or user profile in Web Storage; it restores the safe profile from the authenticated session endpoint. This limits token extraction, but a compromised browser or XSS can still act as the signed-in user, so keep dependencies updated and deploy behind HTTPS.
 
 ---
 
@@ -95,7 +101,7 @@ Navigate to your project directory in Command Prompt or PowerShell:
 cd C:\path\to\Candor
 ```
 
-#### 2. Start the Node.js Backend (Port 3001)
+#### 2. Start the Node.js Backend (Port 5000)
 
 Open a **new Command Prompt/PowerShell window**:
 
@@ -105,7 +111,7 @@ npm install
 npm run dev
 ```
 
-You should see: `Server running on http://localhost:3001`
+You should see: `Server running on http://localhost:5000`
 
 #### 3. Start the Java Microservice (Port 8081)
 
@@ -205,7 +211,7 @@ Candor/
 │   ├── pom.xml                       Maven dependencies
 │   └── .env                          Environment variables
 │
-├── companion-backend-node/            Node.js/Express BFF (Port 3001)
+├── companion-backend-node/            Node.js/Express BFF (Port 5000)
 │   ├── server.js                     Main server file
 │   ├── routes/                       API routes
 │   ├── controllers/                  Request handlers
@@ -288,7 +294,7 @@ AI_GATEWAY_VIRTUAL_KEY=optional_gateway_key
 ### <span style="color: #9CA3AF;">Frontend</span> (.env in companion-frontend)
 
 ```
-VITE_API_BASE=http://localhost:3001
+VITE_API_BASE=http://localhost:5000
 ```
 
 ---
@@ -297,7 +303,7 @@ VITE_API_BASE=http://localhost:3001
 
 ### <span style="color: #9CA3AF;">Issue: Port Already in Use</span>
 
-If you see "Port 3000/3001/8081 is already in use":
+If you see "Port 3000/5000/8081 is already in use":
 
 **Windows PowerShell:**
 
