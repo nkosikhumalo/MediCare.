@@ -31,6 +31,10 @@ async function initializeSchema() {
   await pool.query(`
     ALTER TABLE users ADD COLUMN IF NOT EXISTS policy_id VARCHAR(100);
     ALTER TABLE users ADD COLUMN IF NOT EXISTS deceased_flag BOOLEAN DEFAULT FALSE;
+    ALTER TABLE claims ADD COLUMN IF NOT EXISTS claimant_relationship VARCHAR(100);
+    ALTER TABLE claims ADD COLUMN IF NOT EXISTS claim_type VARCHAR(100) NOT NULL DEFAULT 'LIFE_COVER';
+    ALTER TABLE claims ADD COLUMN IF NOT EXISTS deceased_document_type VARCHAR(20) NOT NULL DEFAULT 'ID';
+    ALTER TABLE claims ADD COLUMN IF NOT EXISTS passport_country VARCHAR(100);
     CREATE TABLE IF NOT EXISTS policy_members (
       id SERIAL PRIMARY KEY,
       policy_id VARCHAR(100) NOT NULL,
@@ -98,6 +102,15 @@ async function createUser(user) {
 async function findUserByEmail(email) {
   await initializeSchema();
   const result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+  return result.rows[0] || null;
+}
+
+async function findUserById(id) {
+  await initializeSchema();
+  const result = await pool.query(
+    "SELECT id, first_name, last_name, email, username, role, policy_id, deceased_flag FROM users WHERE id = $1",
+    [id]
+  );
   return result.rows[0] || null;
 }
 
@@ -186,6 +199,7 @@ module.exports = {
   pool,
   createUser,
   findUserByEmail,
+  findUserById,
   findUserByUsername,
   createConversation,
   getConversations,
