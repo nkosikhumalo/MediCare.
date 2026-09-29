@@ -57,9 +57,9 @@ async function connect() {
   try {
     await pool.query("SELECT NOW()");
     await initializeSchema();
-    console.log("✅ Connected to PostgreSQL");
+    console.log(" Connected to PostgreSQL");
   } catch (error) {
-    console.error("❌ PostgreSQL connection error:", error.message);
+    console.error(" PostgreSQL connection error:", error.message);
   }
 }
 

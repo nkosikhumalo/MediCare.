@@ -10,7 +10,12 @@ import static org.junit.jupiter.api.Assertions.*;
 class MockJwtServiceTest {
 
     private final JwtProperties properties = new JwtProperties();
-    private final MockJwtService service = new MockJwtService(properties);
+    private final MockJwtService service;
+
+    MockJwtServiceTest() {
+        properties.setSigningSecret("unit-test-signing-secret-at-least-32-bytes-long");
+        service = new MockJwtService(properties);
+    }
 
     @Test
     void issuesAndValidatesATokenRoundTrip() {
