@@ -175,7 +175,7 @@ function UserAvatar({ size = 36 }) {
   );
 }
 function HomeNav({ onBack, onGoHome, onViewNotif, darkMode, toggleTheme,
-  userId, unreadCount, menuOpen, setMenuOpen, onLogout }) {
+  unreadCount, menuOpen, setMenuOpen, onLogout }) {
   const menuRef = useRef(null);
   useEffect(() => {
     if (!menuOpen) return;
@@ -225,6 +225,11 @@ export default function Home() {
   const { darkMode, toggleTheme } = useTheme();
   const { user, token, authReady, clearAuth } = useAuth();
   const [claims, setClaims] = useState([]);
+  const [todayDate] = useState(() => {
+    const date = new Date();
+    date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+    return date.toISOString().slice(0, 10);
+  });
   const [claimsLoading, setClaimsLoading] = useState(true);
   const [claimsError, setClaimsError] = useState("");
   const [claimFormOpen, setClaimFormOpen] = useState(false);
@@ -259,8 +264,6 @@ export default function Home() {
   useEffect(() => {
     if (!authReady || !token) return undefined;
     let cancelled = false;
-    setClaimsLoading(true);
-    setClaimsError("");
     apiFetch("/api/claims")
       .then(data => {
         if (!cancelled) {
@@ -340,7 +343,6 @@ export default function Home() {
   const displayName = user?.first_name || user?.username || "Member";
   const userRole = user?.role && ROLE_LABELS.includes(user.role) ? user.role : "Policyholder";
   const unreadCount = NOTIFICATIONS.filter(n => n.unread).length;
-  const userId = user?.id;
   const recentClaims = [
     ...claims.map(claim => {
       const status = (claim.status || "CLAIM_SUBMITTED_PENDING_REVIEW").replaceAll("_", " ").toLowerCase().replace(/\b\w/g, letter => letter.toUpperCase());
@@ -365,7 +367,7 @@ export default function Home() {
   const navProps = {
     onGoHome: () => setView("home"),
     onViewNotif: () => setView("notifications"),
-    darkMode, toggleTheme, userId, unreadCount,
+    darkMode, toggleTheme, unreadCount,
     menuOpen, setMenuOpen,
     onLogout: () => { clearAuth(); navigate("/", { replace: true }); },
   };
@@ -690,7 +692,7 @@ export default function Home() {
                   </>
                 )}
                 <label><span className="hp-claim-label-text">Date of death <span className="hp-claim-required" aria-hidden="true">*</span></span>
-                  <input name="date_of_death" type="date" required max={new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10)} value={claimForm.date_of_death} onChange={event => setClaimForm({ ...claimForm, date_of_death: event.target.value })} />
+                  <input name="date_of_death" type="date" required max={todayDate} value={claimForm.date_of_death} onChange={event => setClaimForm({ ...claimForm, date_of_death: event.target.value })} />
                 </label>
                 <label className="hp-claim-notes">Anything else we should know? <span>(optional)</span>
                   <textarea name="notes" rows="3" maxLength={2000} value={claimForm.notes} onChange={event => setClaimForm({ ...claimForm, notes: event.target.value })} />
