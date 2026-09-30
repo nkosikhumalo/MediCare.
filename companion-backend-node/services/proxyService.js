@@ -11,18 +11,39 @@ const https = require("https");
 const { URL } = require("url");
 
 function resolveJavaTarget() {
-    if (process.env.JAVA_SERVICE_URL) {
+    const isProduction = process.env.NODE_ENV === "production";
+    const configuredUrl = process.env.JAVA_SERVICE_URL?.trim();
+
+    if (isProduction && !configuredUrl) {
+        throw new Error("JAVA_SERVICE_URL must be set to the deployed Java service URL in production.");
+    }
+
+    if (configuredUrl) {
         try {
-            const u = new URL(process.env.JAVA_SERVICE_URL);
+            const u = new URL(configuredUrl);
+            if (!["http:", "https:"].includes(u.protocol)) {
+                throw new Error("URL must use HTTP or HTTPS");
+            }
+            if (isProduction && (u.protocol !== "https:" || ["localhost", "127.0.0.1", "::1"].includes(u.hostname))) {
+                throw new Error("Production JAVA_SERVICE_URL must be a public HTTPS URL");
+            }
             return {
                 protocol: u.protocol,
                 host: u.hostname,
                 port: parseInt(u.port || (u.protocol === "https:" ? "443" : "80"), 10),
             };
         } catch (err) {
+            if (isProduction) {
+                throw new Error(`Invalid production JAVA_SERVICE_URL: ${err.message}`);
+            }
             console.warn("[proxy] Invalid JAVA_SERVICE_URL, falling back to host/port:", err.message);
         }
     }
+
+    if (isProduction) {
+        throw new Error("Production Node service cannot use the local Java fallback. Set JAVA_SERVICE_URL.");
+    }
+
     return {
         protocol: "http:",
         host: process.env.JAVA_SERVICE_HOST || "localhost",
