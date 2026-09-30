@@ -4,7 +4,7 @@ import { deleteConversation } from "../services/chatService";
 
 function formatConvoTitle(title) {
     if (!title) return "New chat";
-    return title.replace(/\s*[—–\-]\s*/g, " ").replace(/\s+/g, " ").trim();
+    return title.replace(/\s*[—–-]\s*/g, " ").replace(/\s+/g, " ").trim();
 }
 
 function Sidebar({
