@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useLayoutEffect } from "react";
+import { useState, useEffect, useRef, useLayoutEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
 import Sidebar from "../components/Sidebar";
@@ -42,11 +42,21 @@ function Chat() {
         setIsLoading,
     });
 
+    const loadConversations = useCallback(async () => {
+        if (!userId) return;
+        try {
+            const data = await getConversations(userId);
+            setConversations(Array.isArray(data) ? data : []);
+        } catch (err) {
+            if (err.code === "UNAUTHORIZED") navigate("/login");
+        }
+    }, [userId, navigate]);
+
     useEffect(() => {
         if (!authReady) return;
         if (!token) { navigate("/login"); return; }
-        loadConversations();
-    }, [token, authReady]);
+        queueMicrotask(() => { void loadConversations(); });
+    }, [token, authReady, loadConversations, navigate]);
 
     // Bootstrap policy flow immediately — messages already set synchronously on mount
     useLayoutEffect(() => {
@@ -59,21 +69,11 @@ function Chat() {
         const isCatalogue = !!state.catalogueCard;
         navigate("/chat", { replace: true, state: null });
         startPolicyContextFlow({ policy, isCatalogue, skipSetMessages: true });
-    }, [location.state]);
+    }, [location.state, navigate, startPolicyContextFlow]);
 
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages, isLoading]);
-
-    async function loadConversations() {
-        if (!userId) return;
-        try {
-            const data = await getConversations(userId);
-            setConversations(Array.isArray(data) ? data : []);
-        } catch (err) {
-            if (err.code === "UNAUTHORIZED") navigate("/login");
-        }
-    }
 
     async function loadMessages(conversationId) {
         if (!conversationId) return;
