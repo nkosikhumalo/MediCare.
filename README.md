@@ -280,7 +280,10 @@ DB_PASSWORD=your_password
 DB_PORT=5432
 JWT_SECRET=your_secret_key
 OPENROUTER_API_KEY=your_api_key
+JAVA_SERVICE_URL=http://localhost:8080
 ```
+
+For deployed Node, set `JAVA_SERVICE_URL=https://medicare1-mxqs.onrender.com`; production Node now refuses to start if this URL is missing or not public HTTPS, preventing a silent localhost fallback.
 
 ### <span style="color: #9CA3AF;">Java Backend</span> (.env in companion-backend)
 
@@ -289,6 +292,8 @@ MOCK_JWT_SIGNING_SECRET=your_jwt_secret
 OPENROUTER_API_KEY=your_api_key
 OPENROUTER_MODEL=openai/gpt-4o-mini
 AI_GATEWAY_VIRTUAL_KEY=optional_gateway_key
+AI_GATEWAY_BASE_URL=https://riskbifrostent.ai/openai
+PORT=8080
 ```
 
 ### <span style="color: #9CA3AF;">Frontend</span> (.env in companion-frontend)
@@ -389,6 +394,6 @@ FRONTEND_ORIGINS=https://insuremedical.vercel.app,https://medicare-git-main-nkos
 NODE_ENV=production
 ```
 
-Also set the required database and shared JWT secret variables in Render. The shared JWT secret must be identical in the Node and Java services. Render provides `PORT`. The Node proxy supports HTTPS for the hosted Java service.
+Also set the required database and shared JWT secret variables in Render. The shared JWT secret must be identical in the Node and Java services. Render provides `PORT` to each service; Java uses it as its listening port and defaults to 8080 locally. Set `AI_GATEWAY_BASE_URL` on Java only if the gateway endpoint changes. The Node proxy supports HTTPS for the hosted Java service.
 
 If any Vercel deployment uses a different domain, add its exact `https://` origin to the comma-separated `FRONTEND_ORIGINS` value on the Node service.
