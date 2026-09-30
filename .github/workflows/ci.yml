@@ -83,6 +83,8 @@ jobs:
 
       - name: Build frontend
         run: npm run build
+        env:
+          VITE_API_BASE: https://medicare-ze3o.onrender.com
 
   root-python:
     name: Root Python integration script
