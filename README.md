@@ -1,15 +1,15 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/CANDOR-111111?style=for-the-badge" alt="Candor" />
+  <img src="https://img.shields.io/badge/MEDICARE-111111?style=for-the-badge" alt="Medicare" />
   <img src="https://img.shields.io/badge/AI_COMPANION-E4032B?style=for-the-badge" alt="AI Companion" />
 </p>
 
-<h1 align="center">Candor AI Companion</h1>
+<h1 align="center">Medicare AI Companion</h1>
 
 <p align="center"><strong>Simple support for life insurance, policies, and claims.</strong></p>
 
 ---
 
-Candor is a life-insurance support app. People can sign in, get help with policies and claims, send claim documents, update some policy details, and try premium changes with a calculator.
+Medicare is a health-insurance support app. People can sign in, get help with policies and claims, send claim documents, update some policy details, and try premium changes with a calculator.
 
 ## Stack
 
@@ -60,7 +60,7 @@ Create a PostgreSQL database, then create `companion-backend-node/.env` using th
 
 ```dotenv
 PORT=5000
-DATABASE_URL=postgresql://USER:PASSWORD@localhost:5432/candor_db
+DATABASE_URL=postgresql://USER:PASSWORD@localhost:5432/medicare_db
 DATABASE_SSL=false
 JWT_SECRET=replace-with-a-random-secret-at-least-32-bytes-long
 FRONTEND_ORIGINS=http://localhost:5173
