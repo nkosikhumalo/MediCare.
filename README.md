@@ -1,399 +1,136 @@
+<p align="center">
+  <img src="https://img.shields.io/badge/CANDOR-111111?style=for-the-badge" alt="Candor" />
+  <img src="https://img.shields.io/badge/AI_COMPANION-E4032B?style=for-the-badge" alt="AI Companion" />
+</p>
 
-# <span style="color: #E4032B;">MediCare</span> AI Companion
+<h1 align="center">Candor AI Companion</h1>
 
-> Accessible Life Insurance AI Companion - Environment Shell
-
----
-
-## <span style="color: #E4032B;">Overview</span>
-
-The MediCare AI Companion is a secure, role-based insurance platform demonstrating enterprise-grade **security and identity architecture**. The system uses a multi-layered approach with separate authentication layers for end-users and machine-to-machine communication.
-
-### <span style="color: #9CA3AF;">Core Components</span>
-
-| Component | Technology | Purpose |
-| ----------- | ----------- | --------- |
-| Host Application | Next.js | Insurer Portal |
-| Companion Widget | React | Embedded iframe in host |
-| API Backend | Node.js/Express | BFF with JWT & session management |
-| Microservice | Java/Spring Boot | AI Gateway & business logic |
+<p align="center"><strong>Simple support for life insurance, policies, and claims.</strong></p>
 
 ---
 
-## <span style="color: #E4032B;">System Architecture</span>
+Candor is a life-insurance support app. People can sign in, get help with policies and claims, send claim documents, update some policy details, and try premium changes with a calculator.
 
-```
-Host App (Next.js 3000) 
-    ↓
-Companion Widget (iframe)
-    ↓
-Node.js BFF (5000)
-    ↓
-Java Microservice (8081)
-    ↓
-AI Gateway
-```
+## Stack
 
-**Authentication Model:**
+| Area | Technologies |
+| --- | --- |
+| Web client | React 19, Vite 8, React Router, JavaScript, CSS |
+| API and application data | Node.js, Express 5, PostgreSQL (`pg`) |
+| RAG and business services | Java 21, Spring Boot 3.3, Spring Security, JDBC |
+| RAG document store | SQLite (`sqlite-jdbc`) |
+| Authentication | JWT, bcrypt, role-based authorization |
+| Other client libraries | React Markdown, Capacitor |
 
-- **End-User:** 15-minute JWT in an `HttpOnly` cookie, silently refreshed while the 30-day session remains valid; JavaScript never receives the token.
-- **Machine-to-Machine:** OAuth2 client-credentials for AI Gateway
+## Architecture
 
-### Session and secret configuration
-
-Set the same random secret of at least 32 bytes as `JWT_SECRET` for both the Node BFF and Java service. Do not use a value committed to source control. For local development, allow the frontend origin with `FRONTEND_ORIGINS=http://localhost:5173` (or `http://localhost:3000` if Vite is configured for port 3000). Production requires HTTPS and the exact frontend origin in `FRONTEND_ORIGINS`; production cookies are Secure, use the `__Host-` prefix, and set `SameSite=None` for the embedded widget. Keep the host app origin in the allow-list; browsers may still block third-party cookies, so same-site hosting is preferred.
-
-The BFF validates `Origin` on state-changing requests and uses credentialed CORS only for configured frontend origins. The browser stores no JWT or user profile in Web Storage; it restores the safe profile from the authenticated session endpoint. This limits token extraction, but a compromised browser or XSS can still act as the signed-in user, so keep dependencies updated and deploy behind HTTPS.
-
----
-
-## <span style="color: #E4032B;">Prerequisites & Installation</span>
-
-### <span style="color: #9CA3AF;">Step 1: Install Required Software (Windows)</span>
-
-#### <span style="color: #E4032B;">Node.js</span> (for Frontend & Node.js Backend)
-
-1. Visit: <https://nodejs.org>
-2. Download **LTS version** (18.x or higher)
-3. Run the installer and follow the prompts
-4. Check installation in PowerShell or Command Prompt:
-
-   ```cmd
-   node --version
-   npm --version
-   ```
-
-#### <span style="color: #E4032B;">Java Development Kit 21</span> (for Java Microservice)
-
-1. Visit: <https://www.oracle.com/java/technologies/downloads/>
-2. Download **JDK 21 for Windows**
-3. Run the installer with default settings
-4. Verify installation:
-
-   ```cmd
-   java -version
-   javac -version
-   ```
-
-#### <span style="color: #E4032B;">Git</span> (Optional, for version control)
-
-1. Visit: <https://git-scm.com>
-2. Download the Windows installer
-3. Run installer with default settings
-
-#### <span style="color: #E4032B;">Database</span> (PostgreSQL - Optional for advanced features)
-
-1. Visit: <https://www.postgresql.org/download/windows/>
-2. Download the latest version
-3. Run installer and note the password you set
-
----
-
-## <span style="color: #E4032B;">Running the Application</span>
-
-### <span style="color: #9CA3AF;">Setup Steps</span>
-
-#### 1. Open the Project Folder
-
-Navigate to your project directory in Command Prompt or PowerShell:
-
-```cmd
-cd C:\path\to\Candor
+```text
+React + Vite web client
+        │ HTTP / JSON
+        ▼
+Node.js + Express API ───── PostgreSQL
+        │                    accounts, chat, claims
+        ▼
+Java + Spring Boot service ─ SQLite
+                             policy chunks and RAG data
 ```
 
-#### 2. Start the Node.js Backend (Port 5000)
+The web app sends requests to the Node API. Node handles sign-in and app data, and sends RAG and some business requests to Java. Java checks the JWT again and handles policy search, chat answers, and claims support.
 
-Open a **new Command Prompt/PowerShell window**:
+## RAG and AI
 
-```cmd
+RAG means **retrieval-augmented generation**. It helps the app answer questions using the policy guide. The Java service reads `Myriad_Technical_Guide.md`, splits it into smaller sections, and saves those sections in a local SQLite database (`policy_rag.db` by default). It also stores document versions and embedding data there.
+
+When someone asks a question, the service finds up to eight related sections and gives them to the AI as context. In claims mode, it only searches sections tagged for death claims. Checks help keep answers within the app’s rules. If no AI provider is set up, the app shows a fallback message.
+
+The current setting is `rag.use-mock=true`. This means RAG searches SQLite by keyword. The mock embedding client is for development and testing; it does not do meaning-based search. Java can also call an AI model when provider settings are added. Keep all passwords and API keys in environment variables. They are needed for AI-generated answers, but not to start the app locally.
+
+## Requirements
+
+- Node.js and npm
+- Java 21
+- Maven 3.9+
+- PostgreSQL database
+
+## Local development
+
+### 1. Configure PostgreSQL and Node API
+
+Create a PostgreSQL database, then create `companion-backend-node/.env` using the following values:
+
+```dotenv
+PORT=5000
+DATABASE_URL=postgresql://USER:PASSWORD@localhost:5432/candor_db
+DATABASE_SSL=false
+JWT_SECRET=replace-with-a-random-secret-at-least-32-bytes-long
+FRONTEND_ORIGINS=http://localhost:5173
+JAVA_SERVICE_URL=http://localhost:8080
+```
+
+The API initializes its schema from `companion-backend-node/database/schema.sql` on startup. `DATABASE_URL` can be used instead of the individual `DB_USER`, `DB_HOST`, `DB_NAME`, `DB_PASSWORD`, and `DB_PORT` values. For hosted PostgreSQL, set the appropriate SSL configuration.
+
+Start the Node API:
+
+```bash
 cd companion-backend-node
 npm install
 npm run dev
 ```
 
-You should see: `Server running on http://localhost:5000`
+### 2. Configure and start the Java service
 
-#### 3. Start the Java Microservice (Port 8081)
+Set the same JWT signing secret in the Java process as `JWT_SECRET` (or `MOCK_JWT_SIGNING_SECRET`). Optional AI settings include `OPENROUTER_API_KEY` and `OPENROUTER_MODEL`. The RAG SQLite file is created at `policy_rag.db` by default; set `RAG_DB_PATH` to choose another location.
 
-Open a **second Command Prompt/PowerShell window**:
+From the repository root:
 
-```cmd
+```bash
 cd companion-backend
-mvnw spring-boot:run
+mvn spring-boot:run
 ```
 
-You should see: `Started CompanionBackendApplication`
+The Java service listens on port `8080` by default. Set `JAVA_SERVICE_URL` in the Node API if you use a different address.
 
-#### 4. Start the Frontend (Port 3000)
+### 3. Start the web client
 
-Open a **third Command Prompt/PowerShell window**:
+Create `companion-frontend/.env`:
 
-```cmd
+```dotenv
+VITE_API_BASE=http://localhost:5000
+```
+
+Then run:
+
+```bash
 cd companion-frontend
 npm install
 npm run dev
 ```
 
-You should see: `Local: http://localhost:3000`
+Open the local URL printed by Vite (normally `http://localhost:5173`).
 
----
-
-### <span style="color: #9CA3AF;">Access the Application</span>
-
-Once all three services are running, open your browser and visit:
-
-```
-http://localhost:3000
-```
-
-The system uses three separate terminal windows:
-
-- **Terminal 1:** Node.js Backend (companion-backend-node)
-- **Terminal 2:** Java Service (companion-backend)
-- **Terminal 3:** Frontend (companion-frontend)
-
----
-
-## <span style="color: #E4032B;">Testing the Application</span>
-
-### <span style="color: #9CA3AF;">Accessing the Application</span>
-
-Once all three services are running, open your browser and visit:
-
-```
-http://localhost:3000
-```
-
-### <span style="color: #9CA3AF;">Testing Role-Based Access</span>
-
-The system enforces role-based restrictions:
-
-| Feature | Policyholder | Beneficiary |
-| --------- | ------------- | ------------ |
-| Chat Support | YES | YES |
-| What-If Premium Calculator | YES | NO |
-| Self-Service Updates | YES | NO |
-| Claims Support | YES | YES |
-| Policy Information | YES | YES |
-
-### <span style="color: #9CA3AF;">Running Automated Tests</span>
-
-To verify the security model is working correctly, run the automated tests:
-
-**Windows Command Prompt/PowerShell (in companion-backend directory):**
-
-```cmd
-mvnw test
-```
-
-All 5 security tests should pass, confirming:
-
-- Policyholder access to What-If features
-- Beneficiary blocked from What-If
-- Deceased policy holder demotion to beneficiary
-- Invalid token rejection
-- Missing token rejection
-
----
-
-## <span style="color: #E4032B;">Project Structure</span>
-
-```
-Candor/
-├── companion-backend/                 Java/Spring Boot Service (Port 8081)
-│   ├── src/main/java/com/candor/
-│   │   ├── domain/                   Configuration & data models
-│   │   ├── security/                 JWT & authentication
-│   │   ├── web/                      API controllers
-│   │   ├── rag/                      RAG & AI integration
-│   │   └── whatif/                   Premium calculation
-│   ├── src/test/java/                Security tests
-│   ├── pom.xml                       Maven dependencies
-│   └── .env                          Environment variables
-│
-├── companion-backend-node/            Node.js/Express BFF (Port 5000)
-│   ├── server.js                     Main server file
-│   ├── routes/                       API routes
-│   ├── controllers/                  Request handlers
-│   ├── middleware/                   Auth & role middleware
-│   ├── services/                     Business logic
-│   ├── database/                     PostgreSQL setup
-│   ├── models/                       Data models
-│   ├── package.json                  Dependencies
-│   └── .env                          Environment variables
-│
-├── companion-frontend/                React/Next.js Frontend (Port 3000)
-│   ├── src/pages/                    Page components
-│   ├── src/components/               Reusable components
-│   ├── src/services/                 API services
-│   ├── src/styles/                   CSS styles
-│   ├── src/context/                  State management
-│   ├── package.json                  Dependencies
-│   ├── vite.config.js                Build configuration
-│   └── .env                          Environment variables
-│
-├── README.md                          This file
-└── .gitignore                         Git ignore rules
-```
-
----
-
-## <span style="color: #E4032B;">Security Features</span>
-
-The MediCare system implements enterprise-grade security controls:
-
-### <span style="color: #9CA3AF;">Authentication</span>
-
-- JSON Web Tokens (JWT) with cryptographic signing
-- Role-based access control (RBAC)
-- Per-request validation on all endpoints
-- Token expiration management
-
-### <span style="color: #9CA3AF;">Authorization</span>
-
-- Endpoint-level role enforcement
-- Deceased flag server-side validation
-- Policy holder vs. beneficiary restrictions
-- Session management and logout
-
-### <span style="color: #9CA3AF;">Protected Endpoints</span>
-
-| Endpoint | Policyholder | Beneficiary | Description |
-| ---------- | ------------- | ------------ | ------------- |
-| /api/what-if/* | ALLOWED | BLOCKED | Premium simulation |
-| /api/self-service/* | ALLOWED | BLOCKED | Policy updates |
-| /api/qa/* | ALLOWED | ALLOWED | Chat support |
-| /api/claims/* | ALLOWED | ALLOWED | Claims submission |
-| /api/rag/* | ALLOWED | ALLOWED | Document search |
-
----
-
-## <span style="color: #E4032B;">Environment Variables</span>
-
-### <span style="color: #9CA3AF;">Node.js Backend</span> (.env in companion-backend-node)
-
-```
-DB_USER=your_database_user
-DB_HOST=localhost
-DB_NAME=candor_db
-DB_PASSWORD=your_password
-DB_PORT=5432
-JWT_SECRET=your_secret_key
-OPENROUTER_API_KEY=your_api_key
-JAVA_SERVICE_URL=http://localhost:8080
-```
-
-For deployed Node, set `JAVA_SERVICE_URL=https://medicare1-mxqs.onrender.com`; production Node now refuses to start if this URL is missing or not public HTTPS, preventing a silent localhost fallback.
-
-### <span style="color: #9CA3AF;">Java Backend</span> (.env in companion-backend)
-
-```
-MOCK_JWT_SIGNING_SECRET=your_jwt_secret
-OPENROUTER_API_KEY=your_api_key
-OPENROUTER_MODEL=openai/gpt-4o-mini
-AI_GATEWAY_VIRTUAL_KEY=optional_gateway_key
-AI_GATEWAY_BASE_URL=https://riskbifrostent.ai/openai
-PORT=8080
-```
-
-### <span style="color: #9CA3AF;">Frontend</span> (.env in companion-frontend)
-
-```
-VITE_API_BASE=https://medicare-ze3o.onrender.com
-```
-
-For local development, set `VITE_API_BASE=http://localhost:5000`. Production builds require `VITE_API_BASE`; the build fails with a clear error if it is missing, so a production bundle cannot silently use localhost.
-
----
-
-## <span style="color: #E4032B;">Troubleshooting</span>
-
-### <span style="color: #9CA3AF;">Issue: Port Already in Use</span>
-
-If you see "Port 3000/5000/8081 is already in use":
-
-**Windows PowerShell:**
-
-```powershell
-Get-Process -Id (Get-NetTCPConnection -LocalPort 3000).OwningProcess | Stop-Process -Force
-```
-
-Or simply change the port in the respective `.env` file.
-
-### <span style="color: #9CA3AF;">Issue: Node Modules Not Found</span>
-
-Make sure you ran `npm install` in each directory:
-
-```cmd
-cd companion-backend-node
-npm install
-
-cd ../companion-frontend
-npm install
-```
-
-### <span style="color: #9CA3AF;">Issue: Java Service Won't Start</span>
-
-Ensure JDK 21 is installed and JAVA_HOME is set:
-
-```cmd
-java -version
-```
-
-Should show version 21.x or higher.
-
-### <span style="color: #9CA3AF;">Issue: Database Connection Error</span>
-
-Verify PostgreSQL is running (if using advanced features):
-
-```cmd
-psql --version
-```
-
----
-
-## <span style="color: #E4032B;">Technologies Used</span>
-
-| Layer | Technology | Version |
-| ------- | ----------- | --------- |
-| Frontend | React | 18+ |
-| Build Tool | Vite | Latest |
-| Backend (Node) | Express.js | 4.x |
-| Backend (Java) | Spring Boot | 3.3 |
-| Database | PostgreSQL | 14+ |
-| Authentication | JWT | Custom implementation |
-| UI Framework | React Components | Custom |
-
----
-
-## <span style="color: #E4032B;">Support</span>
-
-For issues or questions regarding setup and deployment:
-
-1. Review the code comments in security-related files
-2. Run the automated tests to verify your setup
-3. Check Windows-specific instructions above
-
-### Render and Vercel connection
-
-The browser calls the Node BFF, which forwards Java requests to the Java service. Set the frontend API base to the Node service URL, not the Java URL.
-
-For each Vercel frontend deployment, set the project root directory to `companion-frontend` and add this environment variable for Production (and Preview too if those deployments should use the live backend):
+## Project layout
 
 ```text
-VITE_API_BASE=https://medicare-ze3o.onrender.com
+companion-frontend/       React and Vite web client
+companion-backend-node/   Express API, authentication, and PostgreSQL access
+companion-backend/        Spring Boot service, RAG, and business logic
+  src/main/resources/
+    Myriad_Technical_Guide.md  Source document loaded by RAG
 ```
 
-Vite embeds this value at build time. After adding or changing it in Vercel, redeploy the frontend. `medicare-ze3o.onrender.com` is the Node BFF; the browser must use Node, not the Java service.
+## Features
 
-Deploy `companion-backend-node` as a separate Render web service with root directory `companion-backend-node`, build command `npm install`, and start command `npm start`. Set these variables in Render:
+- Sign-in, registration, JWT session handling, and role-based access control
+- Policy and claims support through grounded policy-document retrieval
+- Claims document upload and validation
+- Self-service policy updates for eligible users
+- Premium what-if calculations
+- Chat conversation and message persistence
+- English and Sesotho UI text, theme preferences, and browser speech features
 
-```text
-JAVA_SERVICE_URL=https://medicare1-mxqs.onrender.com
-FRONTEND_ORIGINS=https://insuremedical.vercel.app,https://medicare-git-main-nkosis-projects-dc10a720.vercel.app,https://medicare-a388apwr5-nkosis-projects-dc10a720.vercel.app
-NODE_ENV=production
-```
+## Security notes
 
-Also set the required database and shared JWT secret variables in Render. The shared JWT secret must be identical in the Node and Java services. Render provides `PORT` to each service; Java uses it as its listening port and defaults to 8080 locally. Set `AI_GATEWAY_BASE_URL` on Java only if the gateway endpoint changes. The Node proxy supports HTTPS for the hosted Java service.
-
-If any Vercel deployment uses a different domain, add its exact `https://` origin to the comma-separated `FRONTEND_ORIGINS` value on the Node service.
+- Use long, random JWT secrets and keep them out of source control.
+- Use HTTPS in deployed environments and restrict `FRONTEND_ORIGINS` to the client origins you operate.
+- Keep database and AI provider credentials in environment configuration.
+- The repository includes development-oriented mock identity and embedding behavior; configure and review identity and AI provider settings before production use.
