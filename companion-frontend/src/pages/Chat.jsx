@@ -17,7 +17,7 @@ function getInitialMessages(state) {
     return [];
 }
 
-function Chat() {
+function Chat({ popup = false, onClose }) {
     const { token, user, authReady } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
@@ -67,7 +67,12 @@ function Chat() {
         policyFlowStarted.current = true;
         const policy = state.policyCard || state.catalogueCard;
         const isCatalogue = !!state.catalogueCard;
-        navigate("/chat", { replace: true, state: null });
+        navigate("/chat", {
+            replace: true,
+            state: location.state?.backgroundLocation
+                ? { backgroundLocation: location.state.backgroundLocation }
+                : null,
+        });
         startPolicyContextFlow({ policy, isCatalogue, skipSetMessages: true });
     }, [location.state, navigate, startPolicyContextFlow]);
 
@@ -91,8 +96,27 @@ function Chat() {
         setMessages([]);
     }
 
-    return (
-        <div className="chat-app">
+    useEffect(() => {
+        if (!popup) return undefined;
+
+        const previousOverflow = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+        const closeOnEscape = (event) => {
+            if (event.key === "Escape") onClose?.();
+        };
+        window.addEventListener("keydown", closeOnEscape);
+
+        return () => {
+            document.body.style.overflow = previousOverflow;
+            window.removeEventListener("keydown", closeOnEscape);
+        };
+    }, [popup, onClose]);
+
+    const chatPanel = (
+        <div className={`chat-app${popup ? " chat-app-popup" : ""}`}
+            role={popup ? "dialog" : undefined}
+            aria-modal={popup ? "true" : undefined}
+            aria-label={popup ? "Chat with Candor" : undefined}>
             <Sidebar
                 open={sidebarOpen}
                 close={() => setSidebarOpen(false)}
@@ -108,7 +132,7 @@ function Chat() {
             />
 
             <div className="chat-main">
-                <ChatHeader openSidebar={() => setSidebarOpen(true)} />
+                <ChatHeader openSidebar={() => setSidebarOpen(true)} onClose={popup ? onClose : undefined} />
 
                 <MessageList
                     messages={messages}
@@ -128,6 +152,16 @@ function Chat() {
                     inputRef={inputRef}
                 />
             </div>
+        </div>
+    );
+
+    if (!popup) return chatPanel;
+
+    return (
+        <div className="chat-popup-backdrop" onClick={(event) => {
+            if (event.target === event.currentTarget) onClose?.();
+        }}>
+            {chatPanel}
         </div>
     );
 }
