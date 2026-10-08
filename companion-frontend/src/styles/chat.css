@@ -1508,3 +1508,161 @@ body.dark .wc-card:hover .wc-icon {
         padding-bottom: max(12px, env(safe-area-inset-bottom));
     }
 }
+
+/* Keep the compact chat readable without horizontal scrolling. */
+.chat-app-popup,
+.chat-app-popup .chat-main,
+.chat-app-popup .chat-body,
+.chat-app-popup .messages,
+.chat-app-popup .message-row,
+.chat-app-popup .bubble,
+.chat-app-popup .bubble-body {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.chat-app-popup,
+.chat-app-popup .chat-body {
+    overflow-x: hidden;
+}
+
+.chat-app-popup .chat-header {
+    background: var(--surface);
+    border-bottom-color: var(--border);
+}
+
+.chat-app-popup .chat-body {
+    background: var(--bg);
+}
+
+.chat-app-popup .wc-wrap {
+    align-items: stretch;
+    padding: 18px 14px 22px;
+}
+
+.chat-app-popup .wc-greeting {
+    text-align: left;
+    margin-bottom: 18px;
+}
+
+.chat-app-popup .wc-mark {
+    margin-left: 0;
+    border-radius: 9px;
+    background: var(--red-soft);
+    color: var(--red);
+}
+
+.chat-app-popup .wc-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+}
+
+.chat-app-popup .wc-card {
+    min-width: 0;
+    border-left: 2px solid transparent;
+    border-radius: 8px;
+    background: var(--surface);
+}
+
+.chat-app-popup .wc-card:hover,
+.chat-app-popup .wc-card-open {
+    border-color: var(--border);
+    border-left-color: var(--red);
+    background: var(--surface);
+}
+
+.chat-app-popup .wc-card-top,
+.chat-app-popup .wc-card-text {
+    min-width: 0;
+}
+
+.chat-app-popup .wc-icon {
+    border: 0;
+    border-radius: 8px;
+    background: var(--red-soft);
+    color: var(--red);
+}
+
+.chat-app-popup .wc-card-title {
+    white-space: normal;
+    overflow: visible;
+    overflow-wrap: anywhere;
+    text-overflow: clip;
+}
+
+.chat-app-popup .wc-card-sub,
+.chat-app-popup .wc-info-text {
+    overflow-wrap: anywhere;
+}
+
+.chat-app-popup .bubble-body {
+    overflow-wrap: anywhere;
+    word-break: normal;
+}
+
+.chat-app-popup .bubble-body pre,
+.chat-app-popup .bubble-body code,
+.chat-app-popup .bubble-body a {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}
+
+.chat-app-popup .bubble-body table {
+    width: 100%;
+    max-width: 100%;
+    table-layout: fixed;
+    overflow-wrap: anywhere;
+}
+
+.chat-app-popup .bubble-body th,
+.chat-app-popup .bubble-body td {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.chat-app-popup .msg-chips,
+.chat-app-popup .msg-chip {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.chat-app-popup .msg-chip-label,
+.chat-app-popup .msg-chip-sub {
+    overflow-wrap: anywhere;
+}
+
+.chat-app-popup .selected-file {
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.chat-app-popup .input-inner textarea {
+    min-width: 0;
+}
+
+.chat-app-popup .bubble-user {
+    background: var(--navy-light);
+    border-color: var(--navy-light);
+}
+
+body.dark .chat-app-popup .bubble-user {
+    background: #273449;
+    border-color: #273449;
+}
+
+.chat-app-popup .message-row.bot .bubble pre {
+    max-width: 100%;
+    overflow-x: hidden;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.chat-app-popup .message-row.bot .bubble pre code {
+    white-space: inherit;
+    overflow-wrap: anywhere;
+}
