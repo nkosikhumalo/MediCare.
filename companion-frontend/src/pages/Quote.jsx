@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { apiFetch } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import "../styles/quote.css";
@@ -14,6 +14,7 @@ const WAITING_PERIOD_OPTIONS = [
 
 export default function Quote() {
     const navigate = useNavigate();
+    const location = useLocation();
     const { token, user, authReady } = useAuth();
 
     // Redirect if not logged in
@@ -161,7 +162,7 @@ export default function Quote() {
 
                         {result.humanReviewOffered && (
                             <button className="quote-btn quote-btn-outline whatif-adviser-btn"
-                                onClick={() => navigate("/chat")}>
+                                onClick={() => navigate("/chat", { state: { backgroundLocation: location } })}>
                                 Talk to an adviser via Candor
                             </button>
                         )}
