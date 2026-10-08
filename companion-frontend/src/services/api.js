@@ -1,7 +1,14 @@
 /** Shared credentialed API client. Authentication is carried only by an HttpOnly cookie. */
+import { Capacitor } from "@capacitor/core";
+
 const configuredApiBase = import.meta.env.VITE_API_BASE;
-export const API_BASE = (configuredApiBase || (import.meta.env.DEV ? "http://localhost:5000" : ""))
-    .replace(/\/+$/, "");
+const isNativeApp = Capacitor.isNativePlatform();
+const apiBase = isNativeApp
+    ? configuredApiBase || "https://medicare-ze3o.onrender.com"
+    : import.meta.env.DEV
+        ? configuredApiBase || "http://localhost:5000"
+        : "";
+export const API_BASE = apiBase.replace(/\/+$/, "");
 
 const COOKIE_CONSENT_KEY = "candor_cookie_consent";
 
