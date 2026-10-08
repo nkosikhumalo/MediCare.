@@ -7,12 +7,18 @@ const DEFAULT_ORIGINS = [
   "http://localhost",
 ];
 
-const allowedOrigins = new Set(
-  (process.env.FRONTEND_ORIGINS || DEFAULT_ORIGINS.join(","))
-    .split(",")
-    .map((origin) => origin.trim())
-    .filter(Boolean)
-);
+const configuredOrigins = (process.env.FRONTEND_ORIGINS || DEFAULT_ORIGINS.join(","))
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+// Capacitor's production WebViews use these local origins on iOS and Android.
+// Keep them allowed even when FRONTEND_ORIGINS is set for the hosted web app.
+const allowedOrigins = new Set([
+  ...configuredOrigins,
+  "capacitor://localhost",
+  "http://localhost",
+]);
 
 module.exports = function csrfProtection(req, res, next) {
   if (["GET", "HEAD", "OPTIONS"].includes(req.method)) return next();
