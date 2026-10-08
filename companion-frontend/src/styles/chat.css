@@ -1360,3 +1360,151 @@ body.dark .wc-card:hover .wc-icon {
         gap: 12px;
     }
 }
+
+/* Route-backed chat panel. Full-page chat keeps the existing layout. */
+.chat-popup-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding: 16px;
+    background: rgba(20, 25, 32, .18);
+}
+
+.chat-app-popup {
+    position: relative;
+    width: min(440px, calc(100vw - 32px));
+    height: min(720px, calc(100dvh - 32px));
+    min-height: 420px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(20, 25, 32, .16);
+}
+
+.chat-app-popup .chat-main {
+    height: 100%;
+    min-height: 0;
+}
+
+.chat-app-popup .chat-header {
+    height: 58px;
+    padding: 0 12px;
+}
+
+.chat-app-popup .brand-name {
+    font-size: 15px;
+}
+
+.chat-app-popup .brand-sub {
+    font-size: 9px;
+}
+
+.chat-app-popup .back-home-btn {
+    padding: 6px 10px;
+}
+
+.chat-app-popup .chat-body {
+    padding: 14px 0;
+}
+
+.chat-app-popup .messages {
+    padding: 0 12px;
+    gap: 10px;
+}
+
+.chat-app-popup .bubble {
+    max-width: 90%;
+    min-width: 0;
+}
+
+.chat-app-popup .input-wrap {
+    padding: 10px 12px max(10px, env(safe-area-inset-bottom));
+}
+
+.chat-app-popup .input-inner {
+    padding: 7px;
+    border-radius: 8px;
+    box-shadow: none;
+}
+
+.chat-app-popup .sidebar-backdrop {
+    position: absolute;
+}
+
+.chat-app-popup .sidebar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    max-width: 100%;
+}
+
+.chat-app-popup .wc-wrap {
+    padding: 16px 12px 20px;
+}
+
+.chat-app-popup .wc-greeting {
+    margin-bottom: 16px;
+}
+
+.chat-app-popup .wc-mark {
+    width: 42px;
+    height: 42px;
+    margin-bottom: 10px;
+    box-shadow: none;
+}
+
+.chat-app-popup .wc-greeting h1 {
+    font-size: 20px;
+}
+
+.chat-app-popup .wc-greeting p {
+    font-size: 13px;
+}
+
+.chat-app-popup .wc-card {
+    padding: 11px;
+    box-shadow: none;
+    transform: none;
+}
+
+.chat-app-popup .wc-card:hover {
+    transform: none;
+}
+
+.chat-app-popup .wc-card-title {
+    font-size: 12px;
+}
+
+.chat-app-popup .wc-card-sub {
+    font-size: 11px;
+}
+
+@media (max-width: 600px) {
+    .chat-popup-backdrop {
+        padding: 0;
+        background: transparent;
+    }
+
+    .chat-app-popup {
+        width: 100%;
+        height: 100vh;
+        height: 100dvh;
+        min-height: 0;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    .chat-app-popup .chat-header {
+        height: calc(58px + env(safe-area-inset-top));
+        padding-top: env(safe-area-inset-top);
+    }
+
+    .chat-app-popup .input-wrap {
+        padding-bottom: max(12px, env(safe-area-inset-bottom));
+    }
+}

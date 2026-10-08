@@ -1,4 +1,5 @@
-import { Routes, Route } from "react-router-dom";
+import { useCallback } from "react";
+import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import CookieConsent from "./components/CookieConsent";
 
 import Landing from "./pages/Landing";
@@ -10,17 +11,27 @@ import Settings from "./pages/Settings";
 import Quote from "./pages/Quote";
 
 function App() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const backgroundLocation = location.state?.backgroundLocation;
+  const showChatPopup = location.pathname === "/chat" && Boolean(backgroundLocation);
+
+  const closeChat = useCallback(() => {
+    navigate(backgroundLocation || "/home", { replace: true });
+  }, [backgroundLocation, navigate]);
+
   return (
     <>
-      <Routes>
-      <Route path="/" element={<Landing />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/home" element={<Home />} />
-      <Route path="/chat" element={<Chat />} />
-      <Route path="/settings" element={<Settings />} />
-      <Route path="/quote" element={<Quote />} />
-    </Routes>
+      <Routes location={backgroundLocation || location}>
+        <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/home" element={<Home />} />
+        <Route path="/chat" element={<Chat />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/quote" element={<Quote />} />
+      </Routes>
+      {showChatPopup && <Chat popup onClose={closeChat} />}
       <CookieConsent />
     </>
   );

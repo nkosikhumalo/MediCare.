@@ -30,7 +30,12 @@ function Login() {
     try {
       const { user } = await login(email, password);
       saveAuth(user);
-      navigate(redirectTo, { replace: true });
+      navigate(redirectTo, {
+        replace: true,
+        state: location.state?.backgroundLocation
+          ? { backgroundLocation: location.state.backgroundLocation }
+          : undefined,
+      });
     } catch (err) {
       setError(err.message);
     } finally {

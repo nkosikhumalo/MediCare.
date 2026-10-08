@@ -302,7 +302,12 @@ function Landing() {
   }
 
   function goToLogin(from = "/home") {
-    navigate("/login", { state: { from } });
+    navigate("/login", {
+      state: {
+        from,
+        ...(from === "/chat" ? { backgroundLocation: location } : {}),
+      },
+    });
   }
 
   function goToQuote() {
@@ -310,7 +315,7 @@ function Landing() {
   }
 
   function openCandor() {
-    if (token) { navigate("/chat"); return; }
+    if (token) { navigate("/chat", { state: { backgroundLocation: location } }); return; }
     setShowSignInGate(true);
   }
 

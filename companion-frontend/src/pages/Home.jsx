@@ -437,7 +437,7 @@ export default function Home() {
                           : addingPolicyId === p.id ? "Adding…" : "Add to My policies"}
                       </button>
                       <button className="hp-btn-outline" onClick={() =>
-                        navigate("/chat", { state: { catalogueCard: p } })
+                        navigate("/chat", { state: { catalogueCard: p, backgroundLocation: location } })
                       }>Ask Candor</button>
                     </div>
                   </div>
@@ -506,7 +506,7 @@ export default function Home() {
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" /></svg>
               Add policy
             </button>
-            <button className="hp-action-btn" onClick={() => navigate("/chat")}>
+            <button className="hp-action-btn" onClick={() => navigate("/chat", { state: { backgroundLocation: location } })}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
               Ask Candor
             </button>
@@ -549,7 +549,7 @@ export default function Home() {
                     </div>
                     <div className="hp-policy-actions">
                       <button className="hp-btn-outline" onClick={() =>
-                        navigate("/chat", { state: p.isDefault ? { policyCard: p } : { catalogueCard: p } })
+                        navigate("/chat", { state: { ...(p.isDefault ? { policyCard: p } : { catalogueCard: p }), backgroundLocation: location } })
                       }>Ask Candor</button>
                       <button className="hp-btn-ghost" onClick={() => setPolicyDetails(p)}>View details</button>
                     </div>
@@ -635,7 +635,7 @@ export default function Home() {
         </div>
       </main>
 
-      <button className="hp-fab" onClick={() => navigate("/chat")} aria-label="Ask Candor">
+      <button className="hp-fab" onClick={() => navigate("/chat", { state: { backgroundLocation: location } })} aria-label="Ask Candor">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
         </svg>
