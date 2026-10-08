@@ -44,7 +44,7 @@ export default function CookieConsent() {
             <p className="cookie-consent-eyebrow">Your privacy</p>
             <h2 id="cookie-consent-title">Allow the session cookie?</h2>
             <p id="cookie-consent-description">
-              Candor uses one essential, HttpOnly session cookie to keep you signed in and protect account requests. It is set after you sign in and expires after 15 minutes. Candor does not use cookies for advertising or analytics.
+              Candor uses one essential, HttpOnly session cookie to keep you signed in and protect account requests. It is set after you sign in, and your session expires after 30 days. Candor does not use cookies for advertising or analytics.
             </p>
             <p className="cookie-consent-note">
               If you decline, Candor will not send or accept this session cookie. You can still browse public pages, but signing in, registering, and account features will not work. You can change your choice at any time in Cookie settings.
